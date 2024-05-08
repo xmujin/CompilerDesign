@@ -1,76 +1,19 @@
-﻿using ConsoleTest.Model.Inter;
+﻿
 using myapp.Model.Inter;
 using myapp.Model.Lexer;
 using myapp.Model.Symbols;
-using Array = myapp.Model.Symbols.Array;
-using Constant = myapp.Model.Inter.Constant;
+using myapp.Model.Utils;
 using Type = myapp.Model.Symbols.Type;
 
 
-/*
- {
-	int i; int j; int k; bool a; bool b;
-	bool c; 
-	i = 3;
-	j = 4;
-	k = 5;
-	k = i + j;
-	k = i * j;
-	k = i / k;
-	k = i - k;
-	a = true;
-	b = false;
-	c = a && b;
-	c = a || b;
-	a = i <= j;
-	a = i >= j;
-
-
-}
- 
- */
 namespace myapp.Model.Parser
 {
 
 #if true
 
-    // 定义树节点
-    public class TreeNode
-    {
-        public string Value { get; set; }
-        public List<TreeNode> Children { get; set; }
 
-        public TreeNode(string value)
-        {
-            Value = value;
-            Children = new List<TreeNode>();
-        }
 
-        /// <summary>
-        /// 添加子节点
-        /// </summary>
-        /// <param name="s">子节点</param>
-        /// <returns>返回子节点的引用</returns>
-        public TreeNode AddChild(params string[] childs) 
-        {
-            if (childs.Length == 1)
-            {
-                TreeNode child = new TreeNode(childs[0]);
-                Children.Add(child);
-                return child;
-            }
-            else
-            {
-                foreach (string str in childs)
-                {
-                    TreeNode child = new TreeNode(str);
-                    Children.Add(child);
-                }
-                return null;
-            }
-
-        }
-    }
+    
 
 
 #pragma warning disable
@@ -86,6 +29,8 @@ namespace myapp.Model.Parser
         int used = 0; // 用于变量声明的存储位置
         int count = 0;
         Dictionary<Token, Function> funcs = new Dictionary<Token, Function>();
+
+        TreeNode root;
 
         void Error(string s)
         {
@@ -124,10 +69,7 @@ namespace myapp.Model.Parser
         /// </summary>
         public void Program()
         {
-            //writer.WriteLine($"{count++} [label=\"program\"];");
-
-            //Stmt s = Block();
-            TreeNode root = new TreeNode("program");
+            root = new TreeNode("program");
 
             // 创建顶层符号表
             top = new Env();
@@ -144,11 +86,6 @@ namespace myapp.Model.Parser
             writer.WriteLine("}");
             writer.Close();
         }
-
-
-
-        
-
 
         #region Tree
 

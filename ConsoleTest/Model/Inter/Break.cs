@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Type = myapp.Model.Symbols.Type;
-namespace ConsoleTest.Model.Inter
+namespace myapp.Model.Inter
 {
     public class Break : Stmt
     {
