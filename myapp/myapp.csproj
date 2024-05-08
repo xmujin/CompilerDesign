@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>True</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Model\Type.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Wpf.Ui.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="YaccLexTools" Version="1.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Wpf.Ui">
+      <HintPath>Wpf.Ui.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+	<ItemGroup>
+
+		<LexFile Include="Model\Lexer\MyAutoLexer.lex">
+			<OutputFile>Model\Lexer\MyAutoLexer.cs</OutputFile>
+		</LexFile>
+
+	</ItemGroup>
+
+</Project>

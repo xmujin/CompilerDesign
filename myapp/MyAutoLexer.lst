@@ -1,0 +1,60 @@
+
+// ==========================================================================
+//  GPLEX error listing for lex source file <MyAutoLexer.lex>
+// ==========================================================================
+//  Version:  1.2.2
+//  DateTime: 2024/4/21 13:17:02
+// ==========================================================================
+
+
+%namespace myapp.Model.Lexer
+%scannertype LexerScanner
+%visibility public
+
+%option noparser, noembedbuffer
+
+%x COMMENT
+
+%{
+
+%}
+
+Number          ([+-]?[1-9]+)|(0[0-7]*)|(0x[0-9a-fA-F]+)
+//----------------^^
+// Warning: No upper bound to range, "'+','-'" included as set class members
+// -------------------------------------------------------------------------
+Identifier		[a-zA-Y_][a-zA-Z0-9_]*
+Operator		[*+-/=]
+DoubleOpt		([!*+-/<=>]=)|&&|\|\||\+\+
+Float           [-+]?[0-9]+\.[0-9]+([eE][-+]?[0-9]+)?
+//---------------^-----------------------^
+// Warning: Special case: "-" included as set class member
+// Warning: Special case: "-" included as set class member
+// -------------------------------------------------------
+Char            '.'
+String          \".*\"
+Boundary		[;\{\}\(\)]
+Other           [^; \n\/\r\t]
+%%
+
+"/*"			{BEGIN(COMMENT);}
+<COMMENT>.		{}
+<COMMENT>"*/"	{BEGIN(INITIAL);}
+"//".*			{}
+
+
+
+{Number}		{ ShowNum(); }
+{Identifier}	{ ShowId();}
+{DoubleOpt}		{ ShowDoubleOpet();}
+{Operator}      { ShowOperator();}
+{Float}         { ShowNum();}
+{Char}          { ShowNum();}
+{String}        { ShowNum();}
+{Boundary}		{ ShowBoundary();}
+{Number}{Identifier}        {ReportError();}
+
+%%
+
+// ==========================================================================
+

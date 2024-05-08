@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+
+	<ItemGroup>
+
+		<LexFile Include="Model\Lexer\MyAutoLexer.lex">
+			<OutputFile>Model\Lexer\MyAutoLexer.cs</OutputFile>
+		</LexFile>
+
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <PackageReference Include="YaccLexTools" Version="1.2.2" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Folder Include="Python\" />
+	</ItemGroup>
+
+</Project>
