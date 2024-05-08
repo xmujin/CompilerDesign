@@ -1,5 +1,6 @@
 ﻿using myapp.Model.Lexer;
 using myapp.Model.Parser;
+using myapp.Model.Utils;
 using System.Diagnostics;
 
 
@@ -15,17 +16,14 @@ namespace myapp
 
 
             string fileContent = File.ReadAllText(@"H:\MyTests\compile\myapp\ConsoleTest\test.txt");
-            //Lexer lex = new Lexer("{\r\nint j; \r\nj = 3 + 2;\r\n}");
             Lexer lex = new Lexer(fileContent);
-
-
-            Console.WriteLine(lex.GetTokens());
+           // Console.WriteLine(lex.GetTokens());
 
             Parser parser = new Parser(lex);
             parser.Program();
-            //Console.WriteLine("Hello, World!");
-            // 定义 DOT 文件路径和图像文件路径
-            // hhh
+            
+            Dot a = new Dot(parser.GetTree());
+            a.CreateDotFile();
 
 
 

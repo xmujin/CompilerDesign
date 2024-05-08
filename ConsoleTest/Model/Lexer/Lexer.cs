@@ -4,7 +4,6 @@
 using System.Collections;
 using System.IO;
 using System.Text;
-using myapp.Exceptions;
 using myapp.Model.Lexer;
 using Type = myapp.Model.Symbols.Type;
 namespace myapp.Model.Lexer

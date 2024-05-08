@@ -11,19 +11,13 @@ namespace myapp.Model.Parser
 
 #if true
 
-
-
-    
-
-
 #pragma warning disable
     public class Parser
     {
 
         Lexer.Lexer lex;
         Token look;
-        public StreamWriter writer;
-        string filePath = @"H:\MyTests\compile\myapp\ConsoleTest\test.dot";
+
         // 当前的符号表
         Env top = null;
         int used = 0; // 用于变量声明的存储位置
@@ -31,6 +25,10 @@ namespace myapp.Model.Parser
         Dictionary<Token, Function> funcs = new Dictionary<Token, Function>();
 
         TreeNode root;
+        public TreeNode GetTree()
+        {
+            return root;
+        }
 
         void Error(string s)
         {
@@ -49,10 +47,7 @@ namespace myapp.Model.Parser
         {
             lex = l;
             Move(); // 读取第一个词法单元
-            writer = new StreamWriter(filePath);
-            //writer.WriteLine("digraph BinaryTree {\r\n    node [shape=circle, style=filled, fillcolor=lightcyan]  // 设置节点的形状和样式\r\n\r\n    // 定义节点\r\n    1 [label=\"1\"];\r\n    2 [label=\"2\"];\r\n    3 [label=\"3\"];\r\n    4 [label=\"4\"];\r\n    5 [label=\"5\"];\r\n    6 [label=\"6\"];\r\n    7 [label=\"aaa\"];\r\n\r\n    // 定义边\r\n    1 -> 2;  // 根节点连接左子节点\r\n    1 -> 3;  // 根节点连接右子节点\r\n    2 -> 4;  // 左子节点连接左孙节点\r\n    2 -> 5;  // 左子节点连接右孙节点\r\n    3 -> 6;  // 右子节点连接左孙节点\r\n    3 -> 7;  // 右子节点连接右孙节点\r\n}");
-            writer.WriteLine("digraph BinaryTree {");
-            writer.WriteLine("    node [shape=box, style=filled, fillcolor=lightcyan, fontname=\"Microsoft YaHei\"]");
+           
         }
 
       
@@ -80,62 +75,10 @@ namespace myapp.Model.Parser
             s.Gen(begin, after);
             s.Emitlabel(after);*/
             //TreeNode root = CreateBlock(s);
-            ShowTree(root);
-            CreateDot(root);
-            // 写完节点生成树
-            writer.WriteLine("}");
-            writer.Close();
-        }
-
-        #region Tree
-
-        
-
-        void ShowTree(TreeNode root)
-        {
-            Console.WriteLine(root.Value);
-            foreach (var child in root.Children)
-            {
-                ShowTree(child);
-            }
-        }
-
-        void CreateDot(TreeNode root)
-        {
-            Node("" + root.GetHashCode(), root.Value);
-            foreach (var child in root.Children)
-            {
-                Node("" + child.GetHashCode(), child.Value);
-                Edge("" + root.GetHashCode(), "" + child.GetHashCode());
-                CreateDot(child);
-            }
-
-            return;
-
-        }
-
-        /// <summary>
-        /// 定义有向边
-        /// </summary>
-        /// <param name="src">源节点</param>
-        /// <param name="target">目标节点</param>
-        void Edge(string src, string target)
-        {
-            writer.WriteLine($"\t{src}->{target};");
-        }
-
-        /// <summary>
-        /// 定义节点
-        /// </summary>
-        /// <param name="value">值</param>
-        /// <param name="label">标签</param>
-        void Node(string value, string label)
-        {
-            writer.WriteLine($"\t{value} [label=\"{label}\"];");
         }
 
         
-        #endregion
+
 
 
 
