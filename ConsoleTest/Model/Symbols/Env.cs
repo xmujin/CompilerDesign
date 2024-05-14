@@ -35,7 +35,7 @@ namespace myapp.Model.Symbols
         /// </summary>
         /// <param name="w">标识符</param>
         /// <param name="i">标识符对应的类型</param>
-        public void Put(Token w, Id i)
+        /*public void Put(Token w, Id i)
         {
             table.Add(w, i);
         }
@@ -50,6 +50,6 @@ namespace myapp.Model.Symbols
 
             return null;
             
-        }
+        }*/
     }
 }

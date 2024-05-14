@@ -1,6 +1,7 @@
 ﻿using myapp.Model.Lexer;
 using myapp.Model.Parser;
 using myapp.Model.Utils;
+using Newtonsoft.Json;
 using System.Diagnostics;
 
 
@@ -8,22 +9,28 @@ using System.Diagnostics;
 namespace myapp
 {
 
-    public class Program
+    public class main
     {
 
         static void Main(string[] args)
         {
 
 
-            string fileContent = File.ReadAllText(@"H:\MyTests\compile\myapp\ConsoleTest\test.txt");
+            string fileContent = File.ReadAllText(@"D:\work\CompilerDesign\ConsoleTest\test.txt");
             Lexer lex = new Lexer(fileContent);
-           // Console.WriteLine(lex.GetTokens());
+           Console.WriteLine(lex.GetTokens());
 
             Parser parser = new Parser(lex);
+
+
             parser.Program();
-            
-            Dot a = new Dot(parser.GetTree());
-            a.CreateDotFile();
+            string json = JsonConvert.SerializeObject(parser.js);
+            File.WriteAllText(@"D:\work\CompilerDesign\ConsoleTest\sb.json", json);
+
+
+
+            /*Dot a = new Dot(parser.GetTree());
+            a.CreateDotFile();*/
 
 
 
@@ -33,8 +40,8 @@ namespace myapp
 
 
 #if false
-            string dotFilePath = @"H:\MyTests\compile\myapp\ConsoleTest\test.dot";
-            string pngFilePath = @"H:\MyTests\compile\myapp\ConsoleTest\binary_tree.png";
+            string dotFilePath = @"H:\work\CompilerDesign\ConsoleTest\test.dot";
+            string pngFilePath = @"H:\work\CompilerDesign\ConsoleTest\binary_tree.png";
             string currentDirectory = Directory.GetCurrentDirectory();
             // 构建命令行命令
             string command = $"dot -Tpng {dotFilePath} -o {pngFilePath}";

@@ -7,16 +7,15 @@ using System.Threading.Tasks;
 
 namespace myapp.Model.Inter
 {
-    public class Node
+    public class Program : Node
     {
 
-        [JsonProperty(Order = 1)]
-        public string type { get; set; } = "Node";
-
-        public Node(string type)
+        [JsonProperty(Order = 2)]
+        public List<Node> body = new List<Node>();
+        public Program() : base("Program")
         {
-            this.type = type;
         }
 
+        
     }
 }
