@@ -13,7 +13,7 @@ namespace myapp.Model.Inter
         /// <summary>
         /// 语句块是一系列语句或声明构成
         /// </summary>
-        public List<Node> body = new List<Node>();
+        public List<Node> body;
         public BlockStatement() : base("BlockStatement")
         {
 

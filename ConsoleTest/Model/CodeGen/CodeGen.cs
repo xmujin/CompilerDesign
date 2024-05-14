@@ -9,9 +9,13 @@ namespace myapp.Model.CodeGen
 
 
         Parser.Parser paser;
-
+        int count = 1;
         //List<Quadruple> quadruples = new List<Quadruple>();
 
+        public CodeGen()
+        {
+
+        }
         public CodeGen(Parser.Parser paser)
         {
             this.paser = paser;
@@ -31,12 +35,12 @@ namespace myapp.Model.CodeGen
         /// 传入的参数是抽象语法树的根结点
         /// </summary>
         /// <param name="program"></param>
-        public static List<Quadruple> GenQuadruple(Program program)
+        public List<Quadruple> GenQuadruple(Program program)
         {
             List<Quadruple> quadruples = new List<Quadruple>();
             JObject node = JObject.FromObject(program);
             JArray body = (JArray)node["body"];
-            Console.WriteLine(node["body"]);
+            //Console.WriteLine(node["body"]);
             foreach (JObject bodyNode in body) 
             {
                 //变量声明
@@ -46,17 +50,49 @@ namespace myapp.Model.CodeGen
                     // 遍历variabledeclarator
                     foreach (JObject vdsNode in vds)
                     {
-                        JObject init = (JObject)vdsNode["init"];
-                        if (init["type"].ToString() == "BinaryExpression")
+                        JObject init = null;
+                        if (vdsNode["init"].Type != JTokenType.Null)
                         {
-
+                            init = (JObject)vdsNode["init"];
                         }
+                        if (init != null)
+                        {
+                            if (init["type"].ToString() == "BinaryExpression")
+                            {
+                                quadruples.AddRange(GenBinaryExpression(init));
+                                quadruples.Add(new Quadruple("=", quadruples.Last().result, null, "t" + count++));
+                            }
+                            else if (init["type"].ToString() == "Literal")
+                            {
+
+                                quadruples.Add(new Quadruple("=", init["value"].ToString(), null, "t" + count++));
+                            }
+                        }
+                        
 
 
                     }
 
 
                 }
+
+                if (bodyNode["type"].ToString() == "FunctionDeclaration")
+                {
+                    JObject blk = (JObject)bodyNode["body"]; // 块语句
+                    JArray stmts = (JArray)blk["body"];
+                    foreach (JObject stmt in stmts)
+                    {
+                        if (stmt["type"].ToString() == "IfStatement")
+                        {
+                            
+                        }
+
+                    }
+
+
+
+                }
+
             }
 
             return quadruples;
@@ -67,14 +103,12 @@ namespace myapp.Model.CodeGen
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static List<Quadruple> GenBinaryExpression(JObject obj)
+        public List<Quadruple> GenBinaryExpression(JObject obj)
         {
             List<Quadruple> quadruples = new List<Quadruple>();
-            
             JObject op = (JObject)obj["op"];
             int opch = int.Parse(op["tag"].ToString());
             string left = null, right = null;
-
 
             if (obj["left"]["type"].ToString() == "Literal")
             {
@@ -83,12 +117,14 @@ namespace myapp.Model.CodeGen
                 {
                     
                     right = obj["right"]["value"].ToString();
-                    quadruples.Add(new Quadruple("" + (char)opch, left, right, "t1"));
+                    quadruples.Add(new Quadruple("" + (char)opch, left, right, "t"+ count++));
+
+                    
                 }
                 else
                 {
                     quadruples.AddRange(GenBinaryExpression((JObject)obj["right"]));
-                    quadruples.Add(new Quadruple("" + (char)opch, quadruples.Last<Quadruple>().result, right, "t" + quadruples.Count + 1));
+                    quadruples.Add(new Quadruple("" + (char)opch, quadruples.Last<Quadruple>().result, right, "t" + count++));
                 }
             }
             else
@@ -97,23 +133,26 @@ namespace myapp.Model.CodeGen
                 {
                     right = obj["right"]["value"].ToString();
                     quadruples.AddRange(GenBinaryExpression((JObject)obj["left"]));
-                    quadruples.Add(new Quadruple("" + (char)opch, quadruples.Last<Quadruple>().result, right, "t" + (quadruples.Count + 1)));
+                    quadruples.Add(new Quadruple("" + (char)opch, quadruples.Last<Quadruple>().result, right, "t" + count++));
                 }
-                else  // 左不是字面量，右也不是字面量
+                else  // 左表达式，右也是表达式
                 {
 
-
+                    quadruples.AddRange(GenBinaryExpression((JObject)obj["left"]));
+                    string leftRes = quadruples.Last<Quadruple>().result;
+                    quadruples.AddRange(GenBinaryExpression((JObject)obj["right"]));
+                    string rightRes = quadruples.Last<Quadruple>().result;
+                    quadruples.Add(new Quadruple("" + (char)opch, leftRes, rightRes, "t" + count++));
 
                 }
                 
             }
 
-
-
-
             return quadruples;
 
         }
+
+
 
 
 

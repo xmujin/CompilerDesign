@@ -10,7 +10,7 @@ namespace myapp.Model.Inter
     {
 
         /// <summary>
-        /// 表达式语句对应的表达式
+        /// 表达式语句对应的表达式, 即3;   a; a+ 3;等表达式后直接加分号的情况
         /// </summary>
         public Expression expression;
         public ExpressionStatement(Expression expression) : base("ExpressionStatement")

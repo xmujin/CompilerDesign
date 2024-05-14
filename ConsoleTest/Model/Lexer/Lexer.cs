@@ -46,7 +46,7 @@ namespace myapp.Model.Lexer
         void ShowId()
         {
             sb.Append(string.Format("{0}:\t({1, -7}, {2, 3})\n", yyline, yytext, Tag.ID));
-            Console.WriteLine(yytext);
+            //Console.WriteLine(yytext);
             Word w = (Word)words[yytext];
             if(w != null)
             {

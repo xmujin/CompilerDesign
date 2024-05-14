@@ -190,15 +190,15 @@ namespace myapp.Model.Parser
         {
             FunctionDeclaration func = new FunctionDeclaration();
             func.id = topid;
-
             if(look.tag == '(')
             {
                 Move();
                 root.AddChild("(");
-                func.param.AddRange(Paramlist(root.AddChild("paramlist")));
+                func.param = Paramlist(root.AddChild("paramlist"));
                 Match(')');
                 root.AddChild(")");
-                Block(root.AddChild("block"));
+                func.body = Block(root.AddChild("block"));
+
             }
             return func;
         }
@@ -223,14 +223,10 @@ namespace myapp.Model.Parser
             }
             else
             {
-
+                return null;
             }
             return ids;
         }
-
-
-
-
 
 
 
@@ -240,9 +236,8 @@ namespace myapp.Model.Parser
             BlockStatement blk = new BlockStatement();
             Match('{');
             root.AddChild("{");
-
             //blk.body
-            blk.body.AddRange(Statements(root.AddChild("statements")));
+            blk.body = Statements(root.AddChild("statements"));
             Match('}');
             root.AddChild("}");
 
@@ -260,7 +255,12 @@ namespace myapp.Model.Parser
                 return null;
             }
             stmts.Add(Statement(root.AddChild("statement")));
-            stmts.AddRange(Statements(root.AddChild("statements")));
+            List<Node> nodes = Statements(root.AddChild("statements"));
+            if(nodes != null)
+            {
+                stmts.AddRange(nodes);
+            }
+            
             
             return stmts;
         }
@@ -290,6 +290,31 @@ namespace myapp.Model.Parser
                 root.AddChild(";");
                 return es;
             }
+            else if (look.tag == Tag.IF)
+            {
+                
+                Move();
+                root.AddChild("if");
+                Match('(');
+                root.AddChild("(");
+
+                Expression test = Bool(root.AddChild("bool"));
+                Match(')');
+                root.AddChild(")");
+
+                Node consequent = Statement(root.AddChild("statement"));
+                IfStatement ifs = new IfStatement(test, consequent);
+
+                if (look.tag == Tag.ELSE)
+                {
+                    root.AddChild("else");
+                    ifs.alternate = Statement(root.AddChild("statement"));
+                }
+
+                return ifs;
+
+
+            }
 #if false
             else if(look.tag == Tag.FOR)
             {
@@ -308,22 +333,7 @@ namespace myapp.Model.Parser
                 root.AddChild(")");
                 Statement(root.AddChild("statement"));
             }
-            else if(look.tag == Tag.IF)
-            {
-                Move();
-                root.AddChild("if");
-                Match('(');
-                root.AddChild("(");
-                Bool(root.AddChild("bool"));
-                Match(')');
-                root.AddChild(")");
-                Statement(root.AddChild("statement"));
-                if(look.tag == Tag.ELSE)
-                {
-                    root.AddChild("else");
-                    Statement(root.AddChild("statement"));
-                }
-            }
+            
             else if (look.tag == Tag.WHILE)
             {
                 Match(Tag.WHILE);
