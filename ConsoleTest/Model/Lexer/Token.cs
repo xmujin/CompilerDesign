@@ -17,8 +17,7 @@
         public override string ToString()
         {
 
-            char ch = (char)tag;
-            return string.Format("{0}:\t({1, -7}, {2, 3})\n", Line, ch, tag);
+            return "" + (char)tag;
         }
 
 

@@ -1,4 +1,5 @@
-﻿using myapp.Model.Lexer;
+﻿using myapp.Model.Inter;
+using myapp.Model.Lexer;
 using myapp.Model.Parser;
 using myapp.Model.Utils;
 using Newtonsoft.Json;
@@ -24,6 +25,7 @@ namespace myapp
 
 
             parser.Program();
+            Program.symbolTable.PrintScopeHistory();
             string json = JsonConvert.SerializeObject(parser.js);
             File.WriteAllText(@"D:\work\CompilerDesign\ConsoleTest\sb.json", json);
 

@@ -1,6 +1,7 @@
 ﻿using myapp.Model.Inter;
 using Newtonsoft.Json.Linq;
 using System.Linq.Expressions;
+using System.Text;
 namespace myapp.Model.CodeGen
 {
 
@@ -52,17 +53,22 @@ namespace myapp.Model.CodeGen
 
 
 
-        public static void ShowQuadruple(List<Quadruple> quadruples)
+        public static string ShowQuadruple(List<Quadruple> quadruples)
         {
+            StringBuilder sb = new StringBuilder();
             int count = 1;
             foreach (Quadruple q in quadruples)
             {
                 if(q != null)
                 {
-                    Console.WriteLine("{4}:\t{0}, {1}, {2}, {3}", q.op, q.arg1, q.arg2, q.result, count++);
+                    sb.AppendLine(string.Format("{4}:\t{0}, {1}, {2}, {3}", q.op, q.arg1, q.arg2, q.result, count++));
+                    //Console.WriteLine("{4}:\t{0}, {1}, {2}, {3}", q.op, q.arg1, q.arg2, q.result, count++);
                 }
                 
             }
+
+
+            return sb.ToString();
 
         }
 

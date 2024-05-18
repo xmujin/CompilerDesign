@@ -1,15 +1,23 @@
-   
-   
-   int x, y, z;
-
-
-   int main()
-   {
-	if(x > 7)
+  
+int x, y, z;
+int main()
+{
+	x = 3 + 2 * 5;
+	if(x > 5)
 	{
-		x = x + 1;
-	
+		x = 1;
+		if(x > 5)
+		{
+			x = 4 * 5;
+		}
+		else
+		{
+			x = 6;
+		}
 	}
-   }
-
-
+	else
+	{
+		x = 6;
+	}
+	
+}

@@ -39,11 +39,17 @@ namespace myapp.Model.Inter
                     variableDeclaration.Gen(quadruples, b, a);
 
                 }
+                else if(node is IfStatement ifs)
+                {
+                    //int begin = NewLabel();
+                    int end = NewLabel();
+                    ifs.Gen(quadruples,0, end);
+                }
                 else // 其他语句
                 {
-                    int begin = NewLabel();
-                    int end = NewLabel();
-                    node.Gen(quadruples, begin, end);
+                    
+                    node.Gen(quadruples, b, a);
+
                 }
 
 

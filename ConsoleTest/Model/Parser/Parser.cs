@@ -22,8 +22,6 @@ namespace myapp.Model.Parser
         Lexer.Lexer lex;
         Token look;
 
-        // 当前的符号表
-        Env top = null;
         int used = 0; // 用于变量声明的存储位置
         int count = 0;
         //Dictionary<Token, Function> funcs = new Dictionary<Token, Function>();
@@ -75,11 +73,15 @@ namespace myapp.Model.Parser
         {
             js = new Program();
             root = new TreeNode("program");
-
-
-            // 创建顶层符号表
-            top = new Env();
             js.body.AddRange(VdeclFdecls(root.AddChild("vdeclFdecls")));
+            int begin = js.NewLabel();
+            int end = js.NewLabel();
+            js.EmitLabel(quadruples, "program_begin");
+            js.Gen(quadruples, begin, end);
+            js.EmitLabel(quadruples, "program_end");
+
+
+            CodeGen.CodeGen.ShowQuadruple(quadruples);
         }
 
         #region program
@@ -252,7 +254,7 @@ namespace myapp.Model.Parser
             List<Node> stmts = new List<Node>(); 
             if (look.tag == '}')
             {
-                return null;
+                return new List<Node>();
             }
             stmts.Add(Statement(root.AddChild("statement")));
             List<Node> nodes = Statements(root.AddChild("statements"));
@@ -302,13 +304,14 @@ namespace myapp.Model.Parser
                 Match(')');
                 root.AddChild(")");
 
-                Node consequent = Statement(root.AddChild("statement"));
+                Statement consequent = (Statement)Statement(root.AddChild("statement"));
                 IfStatement ifs = new IfStatement(test, consequent);
 
                 if (look.tag == Tag.ELSE)
                 {
+                    Move();
                     root.AddChild("else");
-                    ifs.alternate = Statement(root.AddChild("statement"));
+                    ifs.alternate = (Statement)Statement(root.AddChild("statement"));
                 }
 
                 return ifs;
@@ -517,7 +520,7 @@ namespace myapp.Model.Parser
             {
                 Token tok = look;
                 Move();
-                x = new LogicExpression(tok, x, Unary(root.AddChild("unary")));
+                x = new BinaryExpression(tok, x, Unary(root.AddChild("unary")));
             }
             return x;
 

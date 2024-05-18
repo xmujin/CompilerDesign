@@ -26,6 +26,11 @@ namespace myapp.Model.Symbols
             width = w;
         }
 
+        public string GetTypeStr()
+        {
+            return lexeme;
+        }
+
         public static readonly Type
             Int   = new Type("int",   Tag.BASIC, 4),
             Float = new Type("float", Tag.BASIC, 8),

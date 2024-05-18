@@ -9,10 +9,10 @@ namespace myapp.Model.CodeGen
 {
     public class Quadruple
     {
-        public string op;
-        public string arg1;
-        public string arg2;
-        public string result;
+        public string op { get;  set; }
+        public string arg1 { get; set; }
+        public string arg2 { get; set; }
+        public string result { get; set; }
         public Quadruple(string op, string arg1, string arg2, string result)
         {
             this.op = op;

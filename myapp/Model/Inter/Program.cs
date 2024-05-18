@@ -28,25 +28,24 @@ namespace myapp.Model.Inter
             {
                 if(node is VariableDeclaration variableDeclaration)
                 {
-                    int begin = NewLabel();
-                    int end = NewLabel();
+                    //int begin = NewLabel();
+                    //int end = NewLabel();
                     EmitLabel(quadruples, "varDecl_begin");
-                    variableDeclaration.Gen(quadruples, begin, end);
+                    variableDeclaration.Gen(quadruples, b, a);
                     EmitLabel(quadruples, "varDecl_end");
 
-                    //symbolTable.PrintCurrentScope();
+                    symbolTable.PrintCurrentScope();
 
 
                 }
                 else if(node is FunctionDeclaration functionDeclaration)
                 {
-                    
 
-                    int begin = NewLabel();
-                    int end = NewLabel();
-                    EmitLabel(quadruples, "function_begin");
-                    functionDeclaration.Gen(quadruples, begin, end);
-                    EmitLabel(quadruples, "function_end");
+
+                    
+                    
+                    functionDeclaration.Gen(quadruples, b, a);
+                    
 
                 }
             

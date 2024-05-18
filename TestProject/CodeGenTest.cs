@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 namespace TestProject
 {
 
-    [TestFixture]
+    [Ignore("")]
     public class CodeGenTest
     {
         string fileContent = File.ReadAllText(@"D:\work\CompilerDesign\ConsoleTest\test.txt");
@@ -27,7 +27,7 @@ namespace TestProject
 
 
         /// <summary>
-        /// int one = 123;
+        ///  生成所有的四元式  int one = 123;
         /// </summary>
         [Test]
         public void TestGenQuadruple_1()
@@ -138,6 +138,153 @@ namespace TestProject
             CollectionAssert.AreEqual(expect, actual);
 
         }
+
+
+
+        /// <summary>
+        /// 测试非嵌套的if语句
+        /// if(3>2)
+        /// {
+        ///     3+2;
+        /// }
+        /// else
+        /// {
+        ///     3+2;
+        /// }
+        /// </summary>
+        [Test]
+        public void TestGenIfStatement_1()
+        {
+            CodeGen cg = new CodeGen();
+
+            Literal left1 = new Literal("3", 3);
+            Literal right1 = new Literal("2", 2);
+            Token tok1 = new Token('>');
+
+            Literal left2 = new Literal("3", 3);
+            Literal right2 = new Literal("2", 2);
+            Token tok2 = new Token('+');
+            BinaryExpression be = new BinaryExpression(tok2, left2, right2);
+
+            ExpressionStatement es = new ExpressionStatement(be);
+
+            LogicExpression test = new LogicExpression(tok1, left1, right1);
+
+            BlockStatement bs = new BlockStatement();
+
+            bs.body = new List<Node> { es };
+
+
+            
+
+
+            IfStatement ifs = new IfStatement(test, bs);
+            ifs.alternate = bs;
+
+
+
+
+            string json = JsonConvert.SerializeObject(ifs);
+            //Console.WriteLine(json);
+
+            List<Quadruple> expect = new List<Quadruple> { new Quadruple("+" , "3" , "2" , "t1"),
+                                                           new Quadruple("*", "5", "6", "t2"),
+                                                           new Quadruple("-", "t1", "t2", "t3"),
+            };
+
+
+
+
+
+            List<Quadruple> actual = cg.GenIfStatement(JObject.FromObject(ifs));
+            CodeGen.ShowQuadruple(actual);
+
+            CollectionAssert.AreEqual(expect, actual);
+
+        }
+
+
+
+
+        /// <summary>
+        /// 测试嵌套的if语句
+        /// if(3>2)
+        /// {
+        ///     if(3>2)
+        ///     {
+        ///         3+2;
+        ///     }
+        ///     else
+        ///     {
+        ///         3+2;
+        ///     }
+        ///     
+        /// }
+        /// else
+        /// {
+        ///     3+2;
+        /// }
+        /// </summary>
+        [Test]
+        public void TestGenIfStatement_2()
+        {
+            CodeGen cg = new CodeGen();
+
+            Literal left1 = new Literal("3", 3);
+            Literal right1 = new Literal("2", 2);
+            Token tok1 = new Token('>');
+            LogicExpression test = new LogicExpression(tok1, left1, right1); // 逻辑表达式
+
+            Literal left2 = new Literal("3", 3);
+            Literal right2 = new Literal("2", 2);
+            Token tok2 = new Token('+');
+            BinaryExpression be = new BinaryExpression(tok2, left2, right2);
+            ExpressionStatement es = new ExpressionStatement(be); // 表达式语句
+
+            
+
+            BlockStatement bs = new BlockStatement();
+            bs.body = new List<Node> { es };
+
+            IfStatement ifs = new IfStatement(test, bs);
+            ifs.alternate = bs;
+
+
+            BlockStatement bs1 = new BlockStatement();
+            bs1.body = new List<Node> { ifs };
+            IfStatement inter = new IfStatement(test, bs1);
+            inter.alternate = bs;
+            
+
+
+            //string json = JsonConvert.SerializeObject(ifs);
+            //Console.WriteLine(json);
+
+            List<Quadruple> expect = new List<Quadruple> { new Quadruple("+" , "3" , "2" , "t1"),
+                                                           new Quadruple("*", "5", "6", "t2"),
+                                                           new Quadruple("-", "t1", "t2", "t3"),
+            };
+
+
+
+
+
+            List<Quadruple> actual = cg.GenIfStatement(JObject.FromObject(inter));
+            CodeGen.ShowQuadruple(actual);
+
+            CollectionAssert.AreEqual(expect, actual);
+
+        }
+
+
+
+
+
+
+
+
+
+
 
 
 

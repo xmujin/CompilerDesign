@@ -11,8 +11,8 @@ namespace myapp.Model.Symbols
 {
     public class Env
     {
-        Hashtable table;
-        protected Env prev;
+        private Dictionary<string, Node> symbols;
+        public Env next;
 
         /// <summary>
         /// 构造符号表
@@ -20,36 +20,64 @@ namespace myapp.Model.Symbols
         /// <param name="n">父级符号表</param>
         public Env(Env n) 
         {
-            table = new Hashtable();
-            prev = n;
+            symbols = new Dictionary<string, Node>();
+            next = n;
         }
 
         public Env()
         {
-            table = new Hashtable();
-            prev = null;
+            symbols = new Dictionary<string, Node>();
+            next = null;
         }
+
+        public void ShowSymbols()
+        {
+            Console.WriteLine("符号表");
+            int count = 0;
+            for (Env e = this; e != null; e = e.next)
+            {
+                foreach(var node in e.symbols)
+                {
+                    if(node.Value is VariableDeclarator v)
+                    {
+                        Console.WriteLine("{0}, {1}", v.id, count);
+                    }
+
+                }
+                count++;
+
+
+                
+
+
+
+            }
+
+            
+
+        }
+
 
         /// <summary>
         /// 放入符号表
         /// </summary>
         /// <param name="w">标识符</param>
         /// <param name="i">标识符对应的类型</param>
-        public void Put(Token w, Id i)
+        public void AddSymbol(string name, Node symbol)
         {
-            table.Add(w, i);
+            symbols[name] = symbol;
         }
 
-        public Id Get(Token w)
+        public Node GetSymbol(string name)
         {
-            for (Env e = this; e != null; e = e.prev)
+            for (Env e = this; e != null; e = e.next)
             {
-                Id found = (Id)(e.table[w]);
+                Node found = e.symbols[name];
                 if (found != null) return found;
             }
 
             return null;
-            
+
         }
     }
 }

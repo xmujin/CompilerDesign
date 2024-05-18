@@ -9,6 +9,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Media;
 using Wpf.Ui.Controls;
 using Image = System.Windows.Controls.Image;
+using myapp.Model.Inter;
+using myapp.Model.CodeGen;
+using System.Windows.Documents;
 
 namespace myapp.View
 {
@@ -32,21 +35,53 @@ namespace myapp.View
             System.Windows.MessageBox.Show(mainViewModel.SourceCode);
         }
 
+        public void Code_Click(object sender, RoutedEventArgs e)
+        {
+
+            Lexer lex = new Lexer(code.Text);
+            //Console.WriteLine(lex.GetTokens());
+            Parser parser = new Parser(lex);
+            parser.Program();
+            //res.Text = CodeGen.ShowQuadruple(parser.quadruples);
+            right.Visibility = Visibility.Hidden;
+            datagrid.ItemsSource = parser.quadruples;
+
+            datagrid.Visibility = Visibility.Visible;
+
+        }
+        public void Sem_Click(object sender, RoutedEventArgs e) 
+        {
+            Console.WriteLine("sdfsdf");
+            right.Visibility = Visibility.Hidden;
+
+            Lexer lex = new Lexer(code.Text);
+            //Console.WriteLine(lex.GetTokens());
+            Parser parser = new Parser(lex);
+            parser.Program();
+            //res.Text = Node.symbolTable.PrintScopeHistory();
+            
+
+
+
+        }
+        
+
+
         public void Parser_Click(object sender, RoutedEventArgs e) 
         {
 
-            string fileContent = File.ReadAllText(@"H:\MyTests\compile\myapp\myapp\test.txt");
+            string fileContent = File.ReadAllText(@"D:\work\CompilerDesign\myapp\test.txt");
             //Lexer lex = new Lexer("{\r\nint j; \r\nj = 3 + 2;\r\n}");
             Lexer lex = new Lexer(fileContent);
             Console.WriteLine(lex.GetTokens());
 
             Parser parser = new Parser(lex);
             parser.Program();
-            //Console.WriteLine("Hello, World!");
+            
             // 定义 DOT 文件路径和图像文件路径
 
 
-
+/*
 
             string dotFilePath = @"H:\MyTests\compile\myapp\myapp\test.dot";
             string pngFilePath = @"H:\MyTests\compile\myapp\myapp\binary_tree.png";
@@ -84,7 +119,7 @@ namespace myapp.View
 
 
 
-
+*/
 
 
 

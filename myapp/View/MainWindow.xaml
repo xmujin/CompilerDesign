@@ -6,6 +6,18 @@
         mc:Ignorable="d"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         Title="MainWindow" Height="780" Width="1050">
+    <Window.Resources>
+        <Style x:Key="CenterTextStyle" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="CenterTextBoxStyle" TargetType="TextBox">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+        </Style>
+    </Window.Resources>
     <Grid x:Name="grid" Margin="3" Cursor="">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -33,15 +45,10 @@
             </MenuItem>
             <MenuItem Header="语法分析" LostFocus="MenuItem_LostFocus" Click="Parser_Click">
             </MenuItem>
-            <MenuItem Header="语义分析" >
-                <MenuItem Header="_New" />
-                <Separator />
-                <MenuItem Header="_Exit" />
+            <MenuItem Header="语义分析" Click="Sem_Click">
+               
             </MenuItem>
-            <MenuItem Header="中间代码" >
-                <MenuItem Header="_New" />
-                <Separator />
-                <MenuItem Header="_Exit" />
+            <MenuItem Header="中间代码生成" Click="Code_Click">
             </MenuItem>
             <MenuItem Header="解释器" >
                 <MenuItem Header="_New" />
@@ -69,9 +76,23 @@
             <TextBox   Text="{Binding SourceCode,  UpdateSourceTrigger=PropertyChanged}" Name="code" Grid.Column="0" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Visible" FontFamily="Consolas" FontSize="20" Grid.Row="1" Margin="0,0,0,5" Cursor="IBeam" />
         </ui:DynamicScrollViewer>
 
-        <ui:DynamicScrollViewer  Grid.Row="1" Grid.Column="1" IsScrollingVertically="True" Timeout="10">
-            <TextBox  Text="{Binding LexerCode}"  Grid.Column="1"  AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Visible" FontFamily="Consolas" FontSize="20" Height="NaN" Width="NaN" Grid.Row="1" Margin="5,0,0,5" Cursor="IBeam" />
+        <ui:DynamicScrollViewer x:Name="right" Grid.Row="1" Grid.Column="1" IsScrollingVertically="True" Timeout="10">
+            <TextBox  x:Name="res" Text="{Binding LexerCode}"  Grid.Column="1"  AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Visible" FontFamily="Consolas" FontSize="20" Height="NaN" Width="NaN" Grid.Row="1" Margin="5,0,0,5" Cursor="IBeam" />
         </ui:DynamicScrollViewer>
+
+
+        <DataGrid Visibility="Hidden"   AutoGenerateColumns="False"  Grid.Row="1" Grid.Column="1"  Margin="10"   x:Name="datagrid">
+            <DataGrid.Columns >
+                <DataGridTextColumn  EditingElementStyle="{StaticResource CenterTextBoxStyle}" ElementStyle="{StaticResource CenterTextStyle}" Header="op" Width="*" Binding="{Binding op}"/>
+                <DataGridTextColumn EditingElementStyle="{StaticResource CenterTextBoxStyle}" ElementStyle="{StaticResource CenterTextStyle}" Header="arg1" Width="*" Binding="{Binding arg1}"/>
+                <DataGridTextColumn EditingElementStyle="{StaticResource CenterTextBoxStyle}"  ElementStyle="{StaticResource CenterTextStyle}" Header="arg2"  Width="*" Binding="{Binding arg2}"/>
+                <DataGridTextColumn EditingElementStyle="{StaticResource CenterTextBoxStyle}" ElementStyle="{StaticResource CenterTextStyle}" Header="result" Width="*" Binding="{Binding result}"/>
+            </DataGrid.Columns>
+            
+            
+        </DataGrid>
+        
+
 
         <ui:DynamicScrollViewer x:Name="viewer" Visibility="Hidden"  Grid.Row="1" Grid.Column="1" IsScrollingVertically="True" Timeout="10" Cursor="">
             <Image x:Name="img" Grid.Row="1" Grid.Column="1" Margin="5,0,0,5" />

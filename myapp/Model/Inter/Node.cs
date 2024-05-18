@@ -1,4 +1,7 @@
-﻿using System;
+﻿using myapp.Model.CodeGen;
+using myapp.Model.Symbols;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,43 +11,48 @@ namespace myapp.Model.Inter
 {
     public class Node
     {
-        int lexline = 0;
-        public Node()
-        {
-            
-        }
-
-        public void Error(string s)
-        {
-
-        }
-
-        static int lables;
-
-        public int Newlabel()
-        {
-            return lables++;
-        }
-
+        public static SymbolTable symbolTable = new SymbolTable();
 
 
         /// <summary>
-        /// 输出标签
+        /// 抽象节点的类型
         /// </summary>
-        /// <param name="i"></param>
-        public void Emitlabel(int i)
-        {
-            Console.WriteLine("L" + i + ":");
+        [JsonProperty(Order = 1)]
+        public string type { get; set; } = "Node";
 
+        public Node(string type)
+        {
+            this.type = type;
         }
 
 
-        public void Emit(string s) 
+        public static int labels = 0;
+
+        public int NewLabel()
         {
-            Console.WriteLine("\t" + s);
+            return ++labels;
+        }
+
+        public void EmitLabel(List<Quadruple> quadruples,int i)
+        {
+            quadruples.Add(new Quadruple("label", "L" + i, null, null));
+        }
+
+        public void EmitLabel(List<Quadruple> quadruples, string name)
+        {
+            quadruples.Add(new Quadruple("label", name, null, null));
         }
 
 
+        public virtual void Gen(List<Quadruple> quadruples, int b, int a)
+        {
+
+        }
+
+        /*public virtual List<Quadruple> Gen(List<Quadruple> quadruples, ref int line)
+        {
+            return null;
+        }*/
 
     }
 }
