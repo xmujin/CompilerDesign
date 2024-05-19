@@ -1,4 +1,5 @@
-﻿using myapp.Model.Lexer;
+﻿using myapp.Model.CodeGen;
+using myapp.Model.Lexer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,12 @@ namespace myapp.Model.Inter
         /// </summary>
         public string name;
 
-        
+
+        public override string Gen(List<Quadruple> quadruples)
+        {
+            return name;
+        }
+
         public Identifier(string idtype, string name) : base(new Word(name, Tag.ID), "Identifier")
         {
             this.idtype = idtype;

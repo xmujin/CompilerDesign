@@ -12,7 +12,7 @@ int main()
 		}
 		else
 		{
-			x = 6;
+			x = 333;
 		}
 	}
 	else
@@ -20,4 +20,17 @@ int main()
 		x = 6;
 	}
 	
+}
+
+
+int x;
+int main()
+{
+	x = add(3, 2);
+
+}
+
+int add(int a, int b)
+{
+	return a + b;
 }

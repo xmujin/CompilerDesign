@@ -24,6 +24,7 @@ namespace myapp.Model.Lexer
             { "do" ,  new Word("do",Tag.DO)},
             { "break" ,  new Word("break",Tag.BREAK)},
             { "for" ,  new Word("for",Tag.FOR)},
+            { "return" ,  new Word("return",Tag.RETURN)},
             { Word.True.lexeme ,  Word.True},
             { Word.False.lexeme ,  Word.False},
             { Type.Int.lexeme ,     Type.Int},

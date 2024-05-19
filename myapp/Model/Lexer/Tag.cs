@@ -50,6 +50,7 @@ namespace myapp.Model.Lexer
             TEMP    = 736,
             FUNC    = 737,
             FOR    = 738,
+            RETURN = 739,
             ERROR   =  -1;
     }
 }

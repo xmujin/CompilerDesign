@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CefSharp.Wpf.NETCore" Version="124.3.80" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="YaccLexTools" Version="1.2.2" />
   </ItemGroup>
@@ -33,6 +34,10 @@
 			<OutputFile>Model\Lexer\MyAutoLexer.cs</OutputFile>
 		</LexFile>
 
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Web\" />
 	</ItemGroup>
 
 </Project>

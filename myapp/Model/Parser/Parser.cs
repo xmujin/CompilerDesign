@@ -233,13 +233,18 @@ namespace myapp.Model.Parser
 
             if (look.tag == ')')
             {
+                return ids;
             }
             else
             {
-                while(look.tag != ',' && look.tag != ')') 
+                while (look.tag != ',' && look.tag != ')')
                 {
                     ids.Add(Bool(root));
-                    Match(',');
+                    if (look.tag == ',')
+                    {
+                        Match(',');
+                    }
+                    
 
                 }
             }
@@ -298,14 +303,13 @@ namespace myapp.Model.Parser
 
                 if(look.tag == '(')
                 {
-
+                    Match('(');
                     CallExpression callExpression = new CallExpression(new Identifier("int", w.lexeme), Argumentlist());
-
                     // 生成表达式语句
                     ExpressionStatement es1 = new ExpressionStatement(callExpression);
+                    Match(')');
                     Match(';');
                     return es1;
-
                 }
 
                 Match('=');
@@ -346,6 +350,13 @@ namespace myapp.Model.Parser
                 return ifs;
 
 
+            }
+            else if(look.tag == Tag.RETURN) // 返回语句
+            {
+                Move();
+                ReturnStatement returnStatement = new ReturnStatement(Bool(root.AddChild("bool"))); 
+                Match(';');
+                return returnStatement;
             }
 #if false
             else if(look.tag == Tag.FOR)
@@ -616,7 +627,13 @@ namespace myapp.Model.Parser
                 {
                     Match('(');
                     // 函数调用作为因子
-
+                    
+                    Match('(');
+                    CallExpression callExpression = new CallExpression(new Identifier("int", id.lexeme), Argumentlist());
+                    Match(')');
+                    Match(';');
+                    return callExpression;
+                    
 
                 }
 
