@@ -23,16 +23,12 @@ namespace myapp.Model.Parser
         int count = 0;
         //Dictionary<Token, Function> funcs = new Dictionary<Token, Function>();
 
-        TreeNode root;
+
 
         public Program js;
 
 
         public List<Quadruple> quadruples = new List<Quadruple>();
-        public TreeNode GetTree()
-        {
-            return root;
-        }
 
         void Error(string s)
         {
@@ -69,8 +65,7 @@ namespace myapp.Model.Parser
         public void Program()
         {
             js = new Program();
-            root = new TreeNode("program");
-            js.body.AddRange(VdeclFdecls(root.AddChild("vdeclFdecls")));
+            js.body.AddRange(VdeclFdecls());
             //int begin = js.NewLabel();
             //int end = js.NewLabel();
             js.EmitLabel(quadruples, "program_begin");
@@ -96,20 +91,20 @@ namespace myapp.Model.Parser
 
 
 
-        List<Node> VdeclFdecls(TreeNode root)
+        List<Node> VdeclFdecls()
         {
             List<Node> nodes = new List<Node>();
 
 
             if(look == null)
             {
-                root.AddChild("空语句");
+                
             }
             else if(look.tag == Tag.BASIC)
             {
 
-                nodes.Add(VdeclFdecl(root.AddChild("vdeclFdecl")));
-                nodes.AddRange(VdeclFdecls(root.AddChild("vdeclFdecls")));
+                nodes.Add(VdeclFdecl());
+                nodes.AddRange(VdeclFdecls());
 
             }
             else
@@ -120,12 +115,11 @@ namespace myapp.Model.Parser
             return nodes;
         }
 
-        Node VdeclFdecl(TreeNode root)
+        Node VdeclFdecl()
         {
             Type curType = _Type_();
             Token tok = look; // 获取标识符
             Match(Tag.ID);
-            root.AddChild(((Word)curType).lexeme, ((Word)tok).lexeme);
             Identifier id = new Identifier(((Word)curType).lexeme, ((Word)tok).lexeme);
      //       Id id = new Id((Word)tok, curType, used); // 将标识符及标识符对应的类型信息存入到符号表中
        //     top.Put(tok, id);
@@ -133,25 +127,25 @@ namespace myapp.Model.Parser
 
             if (look.tag == '(')
             {
-                return Fdecl(root.AddChild("fdecl"), id);
+                return Fdecl(id);
             }
             else
             {
-                return Vdecl(root.AddChild("vdecl"), id);
+                return Vdecl(id);
             }
 
             
 
         }
 
-        VariableDeclaration Vdecl(TreeNode root, Identifier topid)
+        VariableDeclaration Vdecl(Identifier topid)
         {
             VariableDeclaration v = new VariableDeclaration();
             if (look.tag == ';')
             {
                 Match(';');
                 v.declarations.Add(new VariableDeclarator(topid, null));
-                root.AddChild(";");
+                ;
                 return v;
             }
             else if (look.tag == ',')
@@ -170,13 +164,10 @@ namespace myapp.Model.Parser
             else if(look.tag == '=')
             {       
                 Match('=');
-                root.AddChild("=");
-                BinaryExpression be = (BinaryExpression)Bool(root.AddChild("bool"));
-                string jsf = JsonConvert.SerializeObject(be);
+ 
+                v.declarations.Add(new VariableDeclarator(topid, Bool()));
 
-                v.declarations.Add(new VariableDeclarator(topid, be));
-
-                VariableDeclaration next = Vdecl(root.AddChild("vdecl"), topid);
+                VariableDeclaration next = Vdecl(topid);
                 v.declarations.AddRange(next.declarations);
                 return v;
             }
@@ -185,25 +176,23 @@ namespace myapp.Model.Parser
         }
 
 
-        FunctionDeclaration Fdecl(TreeNode root, Identifier topid)
+        FunctionDeclaration Fdecl( Identifier topid)
         {
             FunctionDeclaration func = new FunctionDeclaration();
             func.id = topid;
             if(look.tag == '(')
             {
                 Move();
-                root.AddChild("(");
-                func.param = Paramlist(root.AddChild("paramlist"));
+                func.param = Paramlist();
                 Match(')');
-                root.AddChild(")");
-                func.body = Block(root.AddChild("block"));
+                func.body = Block();
 
             }
             return func;
         }
 
 
-        List<Identifier> Paramlist(TreeNode root)
+        List<Identifier> Paramlist()
         {
             List<Identifier> ids = new List<Identifier>();
 
@@ -216,7 +205,7 @@ namespace myapp.Model.Parser
                 if(look.tag == ',')
                 {
                     Match(',');
-                    ids.AddRange(Paramlist(root));
+                    ids.AddRange(Paramlist());
                 }
 
             }
@@ -239,7 +228,7 @@ namespace myapp.Model.Parser
             {
                 while (look.tag != ',' && look.tag != ')')
                 {
-                    ids.Add(Bool(root));
+                    ids.Add(Bool());
                     if (look.tag == ',')
                     {
                         Match(',');
@@ -253,16 +242,16 @@ namespace myapp.Model.Parser
         }
 
 
-        BlockStatement Block(TreeNode root)
+        BlockStatement Block()
         {
 
             BlockStatement blk = new BlockStatement();
             Match('{');
-            root.AddChild("{");
+            ;
             //blk.body
-            blk.body = Statements(root.AddChild("statements"));
+            blk.body = Statements();
             Match('}');
-            root.AddChild("}");
+            ;
 
             return blk;
         }
@@ -270,15 +259,15 @@ namespace myapp.Model.Parser
 
 
 
-        List<Node> Statements(TreeNode root)
+        List<Node> Statements()
         {
             List<Node> stmts = new List<Node>(); 
             if (look.tag == '}')
             {
                 return new List<Node>();
             }
-            stmts.Add(Statement(root.AddChild("statement")));
-            List<Node> nodes = Statements(root.AddChild("statements"));
+            stmts.Add(Statement());
+            List<Node> nodes = Statements();
             if(nodes != null)
             {
                 stmts.AddRange(nodes);
@@ -288,20 +277,115 @@ namespace myapp.Model.Parser
             return stmts;
         }
 
-        Node Statement(TreeNode root)
+        Node Statement()
         {
             if(look.tag == Tag.BASIC)
             {
-                return VdeclFdecl(root.AddChild("vdeclFdecl"));
+                return VdeclFdecl();
             }
-            else if(look.tag == Tag.ID) // 赋值表达式语句
+            else if(look.tag == ';')
             {
-                Word w = (Word)look;
-                root.AddChild(w.lexeme);
+
+                Match(';');
+                return new EmptyStatement();
+            }
+            else if (look.tag == Tag.IF)
+            {
+                
+                Move();
+                Match('(');
+                Expression test = Bool();
+                Match(')');
+
+                Statement consequent = (Statement)Statement();
+                IfStatement ifs = new IfStatement(test, consequent);
+
+                if (look.tag == Tag.ELSE)
+                {
+                    Move();
+                    ifs.alternate = (Statement)Statement();
+                }
+
+                return ifs;
+
+
+            }
+            else if(look.tag == Tag.WHILE)
+            {
+                Move();
+                Match('(');
+
+                Expression test = Bool();
+                Match(')');
+
+                Statement body = (Statement)Statement();
+                WhileStatement ws = new WhileStatement(test, body);
+                return ws;
+            }
+            else if(look.tag == Tag.DO)
+            {
+                Move();
+                Statement body = (Statement)Statement();
+                Match(Tag.WHILE);
+                Match('(');
+                Expression test = Bool();
+                Match(')');
+
+                DoWhileStatement dws = new DoWhileStatement(body,test);
+                Match(';');
+                return dws;
+            }
+            else if(look.tag == Tag.FOR)
+            {
+                Move();
+                Match('(');
+                VariableDeclaration init = null;
+                Node node = Statement();
+
+                if(node is VariableDeclaration es)
+                {
+                    init = es;
+                }
+                Expression test = Bool();
+                Match(';');
+
+                Expression update = Assign();
+
+                Match(')');
+
+                Statement body = (Statement)Statement();
+
+
+                ForStatement ws = new ForStatement(init, test, update, body);
+
+                return ws;
+            }
+            else if(look.tag == Tag.RETURN) // 返回语句
+            {
+                Move();
+                ReturnStatement returnStatement = new ReturnStatement(Bool()); 
+                Match(';');
+                return returnStatement;
+            }
+            else if(look.tag == Tag.BREAK)
+            {
+                Move();
+                Match(';');
+                return new BreakStatement();
+            }
+            else if(look.tag == '{')
+            {
+
+                return Block();
+            }
+            else // 表达式语句, 包括赋值表达式语句， 普通表达表达式语句，以及调用表达式语句
+            {
+
+                /*Word w = (Word)look;
                 Match(Tag.ID);
                 Token op = look;
 
-                if(look.tag == '(')
+                if (look.tag == '(')
                 {
                     Match('(');
                     CallExpression callExpression = new CallExpression(new Identifier("int", w.lexeme), Argumentlist());
@@ -312,114 +396,20 @@ namespace myapp.Model.Parser
                     return es1;
                 }
 
-                Match('=');
-                root.AddChild("=");
 
-                ExpressionStatement es = 
+                Match('=');
+                ExpressionStatement es =
                     new ExpressionStatement(
                         new AssignmentExpression(
-                            op, new Identifier("int" ,w.lexeme), Bool(root.AddChild("bool")))
-                        );
-                ;
+                            op, new Identifier("int", w.lexeme), Bool())
+                        );*/
+
+
+                ExpressionStatement es =new ExpressionStatement(Assign());
                 Match(';');
-                root.AddChild(";");
                 return es;
             }
-            else if (look.tag == Tag.IF)
-            {
-                
-                Move();
-                root.AddChild("if");
-                Match('(');
-                root.AddChild("(");
-
-                Expression test = Bool(root.AddChild("bool"));
-                Match(')');
-                root.AddChild(")");
-
-                Statement consequent = (Statement)Statement(root.AddChild("statement"));
-                IfStatement ifs = new IfStatement(test, consequent);
-
-                if (look.tag == Tag.ELSE)
-                {
-                    Move();
-                    root.AddChild("else");
-                    ifs.alternate = (Statement)Statement(root.AddChild("statement"));
-                }
-
-                return ifs;
-
-
-            }
-            else if(look.tag == Tag.RETURN) // 返回语句
-            {
-                Move();
-                ReturnStatement returnStatement = new ReturnStatement(Bool(root.AddChild("bool"))); 
-                Match(';');
-                return returnStatement;
-            }
-#if false
-            else if(look.tag == Tag.FOR)
-            {
-                Match(Tag.FOR);
-                root.AddChild("for");
-                Match('(');
-                root.AddChild("(");
-                Statement(root.AddChild("statement"));
-                Match(';');
-                root.AddChild(";");
-                Bool(root.AddChild("bool"));
-                Match(';');
-                root.AddChild(";");
-                Statement(root.AddChild("statement"));
-                Match(')');
-                root.AddChild(")");
-                Statement(root.AddChild("statement"));
-            }
             
-            else if (look.tag == Tag.WHILE)
-            {
-                Match(Tag.WHILE);
-                root.AddChild("while");
-                Match('(');
-                root.AddChild("(");
-                Bool(root.AddChild("bool"));
-                Match(')');
-                root.AddChild(")");
-                Statement(root.AddChild("statement"));
-            }
-            else if (look.tag == Tag.DO)
-            {
-                Match(Tag.DO);
-                root.AddChild("do");
-                Statement(root.AddChild("statement"));
-                Match(Tag.WHILE);
-                root.AddChild("while");
-                Match('(');
-                root.AddChild("(");
-                Bool(root.AddChild("bool"));
-                Match(')');
-                root.AddChild(")");
-                Statement(root.AddChild("statement"));
-                Match(';');
-                root.AddChild(";");
-            }
-            else if (look.tag == Tag.BREAK)
-            {
-                Match(Tag.BREAK);
-                Match(';');
-                root.AddChild("break", ";");
-            }
-#endif
-            else if(look.tag == '{')
-            {
-
-                return Block(root.AddChild("block"));
-            }
-            else
-            {
-                return null;
-            }
 
         }
 
@@ -429,6 +419,22 @@ namespace myapp.Model.Parser
 
         #region newbool
 
+
+        Expression Assign()
+        {
+            Expression x = Bool();
+            while (look.tag == '=')
+            {
+                Token tok = look;
+                Move();
+                x = new AssignmentExpression(tok, x, Bool());
+            }
+            return x;
+        }
+
+
+
+
         /// <summary>
         /// ||语句
         /// Bool  -> Join Bool'
@@ -436,14 +442,14 @@ namespace myapp.Model.Parser
         ///          | ε
         /// </summary>
         /// <returns></returns>
-        Expression Bool(TreeNode root)
+        Expression Bool()
         {
-            Expression x = Join(root.AddChild("join"));
+            Expression x = Join();
             while (look.tag == Tag.OR)
             {
                 Token tok = look;
                 Move();
-                x = new LogicExpression(tok, x, Join(root.AddChild("join")));
+                x = new LogicExpression(tok, x, Join());
             }
             return x;
         }
@@ -455,15 +461,15 @@ namespace myapp.Model.Parser
         ///          | ε
         /// </summary>
         /// <returns></returns>
-        Expression Join(TreeNode root)
+        Expression Join()
         {
            
-            Expression x = Equality(root.AddChild("equality"));
+            Expression x = Equality();
             while (look.tag == Tag.AND)
             {
                 Token tok = look;
                 Move();
-                x = new LogicExpression(tok, x, Equality(root.AddChild("equality")));
+                x = new LogicExpression(tok, x, Equality());
             }
             return x;
         }
@@ -476,16 +482,16 @@ namespace myapp.Model.Parser
         ///          | ε
         /// </summary>
         /// <returns></returns>
-        Expression Equality(TreeNode root)
+        Expression Equality()
         {
           
 
-            Expression x = Compare(root.AddChild("compare"));
+            Expression x = Compare();
             while (look.tag == Tag.EQ || look.tag == Tag.NE)
             {
                 Token tok = look;
                 Move();
-                x = new LogicExpression(tok, x, Compare(root.AddChild("compare")));
+                x = new BinaryExpression(tok, x, Compare());
             }
             return x;
 
@@ -502,15 +508,15 @@ namespace myapp.Model.Parser
         ///          | ε
         /// </summary>
         /// <returns></returns>
-        Expression Compare(TreeNode root)
+        Expression Compare()
         {
            
-            Expression x = Expr(root.AddChild("expr"));
+            Expression x = Expr();
             while (look.tag == '>' || look.tag == '<' || look.tag == Tag.LT || look.tag == Tag.GT)
             {
                 Token tok = look;
                 Move();
-                x = new LogicExpression(tok, x, Expr(root.AddChild("expr")));
+                x = new BinaryExpression(tok, x, Expr());
             }
 
            
@@ -530,14 +536,14 @@ namespace myapp.Model.Parser
         ///          | ε
         /// </summary>
         /// <returns></returns>
-        Expression Expr(TreeNode root)
+        Expression Expr()
         {
-            Expression x = Term(root.AddChild("term"));
+            Expression x = Term();
             while (look.tag == '+' || look.tag == '-')
             {
                 Token tok = look;
                 Move();
-                x = new BinaryExpression(tok, x, Term(root.AddChild("term")));
+                x = new BinaryExpression(tok, x, Term());
             }
             return x;
         }
@@ -551,16 +557,16 @@ namespace myapp.Model.Parser
         ///          | ε
         /// </summary>
         /// <returns></returns>
-        Expression Term(TreeNode root)
+        Expression Term()
         {
             
 
-            Expression x = Unary(root.AddChild("unary"));
+            Expression x = Unary();
             while (look.tag == '*' || look.tag == '/')
             {
                 Token tok = look;
                 Move();
-                x = new BinaryExpression(tok, x, Unary(root.AddChild("unary")));
+                x = new BinaryExpression(tok, x, Unary());
             }
             return x;
 
@@ -577,17 +583,16 @@ namespace myapp.Model.Parser
         ///          | Factor
         /// </summary>
         /// <returns></returns>
-        Expression Unary(TreeNode root)
+        Expression Unary()
         {
             if (look.tag == '!' || look.tag == '-')
             {
-                root.AddChild("" + (char)look.tag);
                 Move();
-                return Unary(root.AddChild("unary"));
+                return Unary();
             }
             else
             {
-                return Factor(root.AddChild("factor"));
+                return Factor();
             }
         }
 
@@ -596,17 +601,15 @@ namespace myapp.Model.Parser
         /// 该函数用于处理因子
         /// </summary>
         /// <returns></returns>
-        Expression Factor(TreeNode root)
+        Expression Factor()
         {
             Expression x = null;
             if(look.tag == '(')
             {
 
                 Move();
-                root.AddChild("(");
-                x = Bool(root.AddChild("bool"));
+                x = Bool();
                 Match(')');
-                root.AddChild(")");
                 return x;
             }
             else if(look.tag == Tag.NUM || look.tag == Tag.REAL || look.tag == Tag.TRUE || look.tag == Tag.FALSE)
@@ -616,6 +619,15 @@ namespace myapp.Model.Parser
                 Literal l = new Literal("" + n.value, n.value);
                 Move();
                 return l;
+            }
+            else if(look.tag == Tag.INC) // ++i
+            {
+                Token tok = look;
+                Move();
+                Word id = look as Word;
+                Identifier identifier = new Identifier("int", id.lexeme);
+                UpdateExpression updateExpression = new UpdateExpression(tok, identifier, true);
+                return updateExpression;
             }
             else if (look.tag == Tag.ID)
             {
@@ -636,9 +648,20 @@ namespace myapp.Model.Parser
                     
 
                 }
+                else if(look.tag == Tag.INC)    // i++
+                {
 
+                    Token tok = look;
+                    Move();
+                    UpdateExpression updateExpression = new UpdateExpression(tok, identifier, false);
+                    return updateExpression;
+                }
+                else
+                {
+                    return identifier;
+                }
 
-                return identifier;
+                
             }
             else 
             {
@@ -998,7 +1021,7 @@ namespace myapp.Model.Parser
 
 
 
-        /*void Join(TreeNode root)
+        /*void Join()
         {
             Expr x = Equality();
             while(look.tag == Tag.AND)

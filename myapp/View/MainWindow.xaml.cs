@@ -15,6 +15,8 @@ using System.Windows.Documents;
 using System.Text;
 using Newtonsoft.Json;
 using CefSharp.DevTools.Autofill;
+using myapp.Model.Symbols;
+using myapp.Model.TargetCode;
 
 namespace myapp.View
 {
@@ -113,7 +115,7 @@ namespace myapp.View
             private void Lexer_Click(object sender, RoutedEventArgs e)
             {
 
-
+                
                 ToOperation(UseOperation.LexicalAnalysis);
 
                 Lexer lex = new Lexer(code.Text);
@@ -129,7 +131,7 @@ namespace myapp.View
         /// <param name="e"></param>
         public void Parser_Click(object sender, RoutedEventArgs e)
         {
-            
+            Program.symbolTableManager = new SymbolTableManager();
             Lexer lex = new Lexer(code.Text);
             Parser parser = new Parser(lex);
             StringBuilder sb = new StringBuilder();
@@ -154,6 +156,7 @@ namespace myapp.View
         /// <param name="e"></param>
         public void Sem_Click(object sender, RoutedEventArgs e)
         {
+            Program.symbolTableManager = new SymbolTableManager();
             //Console.WriteLine("sdfsdf");
             //right.Visibility = Visibility.Hidden;
             ToOperation(UseOperation.SemanticAnalysis);
@@ -161,7 +164,8 @@ namespace myapp.View
             //Console.WriteLine(lex.GetTokens());
             Parser parser = new Parser(lex);
             parser.Program();
-            lexerCode.Text = Node.symbolTable.PrintScopeHistory();
+            lexerCode.Text = Program.symbolTableManager.PrintSymbolTable();
+            //lexerCode.Text = Node.symbolTable.PrintScopeHistory();
 
 
 
@@ -175,31 +179,42 @@ namespace myapp.View
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void Code_Click(object sender, RoutedEventArgs e)
-            {
+        {
 
-
+            Program.symbolTableManager = new SymbolTableManager();
             ToOperation(UseOperation.IntermediateCode);
 
 
             Lexer lex = new Lexer(code.Text);
-                //Console.WriteLine(lex.GetTokens());
-                Parser parser = new Parser(lex);
-                parser.Program();
-                //res.Text = CodeGen.ShowQuadruple(parser.quadruples);
-                lexerCode.Visibility = Visibility.Hidden;
-                genCode.ItemsSource = parser.quadruples;
-
-                genCode.Visibility = Visibility.Visible;
-
-            }
-
-
-
-            private void MenuItem_LostFocus(object sender, RoutedEventArgs e)
-            {
-
-            }
+            //Console.WriteLine(lex.GetTokens());
+            Parser parser = new Parser(lex);
+            parser.Program();
+            //res.Text = CodeGen.ShowQuadruple(parser.quadruples);
+            genCode.ItemsSource = parser.quadruples;
 
 
         }
+
+
+        /// <summary>
+        /// 目标代码生成
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Target_Click(object sender, RoutedEventArgs e)
+        {
+            Program.symbolTableManager = new SymbolTableManager();
+            ToOperation(UseOperation.SemanticAnalysis);
+            Lexer lex = new Lexer(code.Text);
+            Parser parser = new Parser(lex);
+            parser.Program();
+            GenTarget genTarget = new GenTarget(parser.quadruples);
+
+            lexerCode.Text = genTarget.GenAll(Program.symbolTableManager);
+        }
+
+
+
     }
+    
+}

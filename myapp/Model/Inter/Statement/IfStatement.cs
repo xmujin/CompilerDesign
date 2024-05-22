@@ -46,10 +46,13 @@ namespace myapp.Model.Inter
             int label1 = NewLabel();
             int label2 = NewLabel();
 
-            if (test is LogicExpression _test)
+            if (test is BinaryExpression _test)
             {
                 trueLabel = new Quadruple("j" + _test.op.ToString(), _test.left.ToString(), _test.right.ToString(), "L" + label1);
             }
+
+            
+
             Quadruple falseLabel = new Quadruple("j", null, null, "L" + label2);
 
             quadruples.Add(trueLabel);

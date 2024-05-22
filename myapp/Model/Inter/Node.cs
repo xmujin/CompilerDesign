@@ -6,12 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 namespace myapp.Model.Inter
 {
     public class Node
     {
-        public static SymbolTable symbolTable = new SymbolTable();
+        public static SymbolTableManager symbolTableManager = new SymbolTableManager();
 
 
         /// <summary>
@@ -24,7 +23,9 @@ namespace myapp.Model.Inter
         {
             this.type = type;
         }
-
+        public Node()
+        {
+        }
 
         public static int labels = 0;
 

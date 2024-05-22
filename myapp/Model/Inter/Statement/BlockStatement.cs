@@ -30,8 +30,9 @@ namespace myapp.Model.Inter
         /// <param name="a"></param>
         public override void Gen(List<Quadruple> quadruples, int b, int a)
         {
+            symbolTableManager.EnterScope();
             // 处理变量声明
-            foreach(var node in body) 
+            foreach (var node in body) 
             {
                 if(node is VariableDeclaration variableDeclaration)
                 {
@@ -45,17 +46,30 @@ namespace myapp.Model.Inter
                     int end = NewLabel();
                     ifs.Gen(quadruples,0, end);
                 }
+                else if(node is WhileStatement ws)
+                {
+                    int end = NewLabel();
+                    ws.Gen(quadruples, 0, end);
+                    EmitLabel(quadruples, end);
+                }
+                else if (node is DoWhileStatement dws)
+                {
+                    int end = NewLabel();
+                    dws.Gen(quadruples, 0, end);
+                    //EmitLabel(quadruples, end);
+                }
                 else // 其他语句
                 {
                     
                     node.Gen(quadruples, b, a);
 
-                }
+                } 
 
 
 
             
             }
+            symbolTableManager.ExitScope();
 
 
         }

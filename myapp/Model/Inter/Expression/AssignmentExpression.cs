@@ -11,7 +11,7 @@ namespace myapp.Model.Inter
     public class AssignmentExpression : Expression
     {
 
-        public Identifier left;
+        public Expression left;
 
 
         public Expression right;
@@ -20,7 +20,7 @@ namespace myapp.Model.Inter
         {
         }
 
-        public AssignmentExpression(Token op, Identifier left, Expression right) : base(op, "AssignmentExpression")
+        public AssignmentExpression(Token op, Expression left, Expression right) : base(op, "AssignmentExpression")
         {
             this.left = left;
             this.right = right;

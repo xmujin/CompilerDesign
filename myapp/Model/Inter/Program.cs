@@ -27,6 +27,8 @@ namespace myapp.Model.Inter
             
             foreach(var node in body) 
             {
+
+                
                 if(node is VariableDeclaration variableDeclaration)
                 {
                     //int begin = NewLabel();
@@ -34,25 +36,14 @@ namespace myapp.Model.Inter
                     EmitLabel(quadruples, "varDecl_begin");
                     variableDeclaration.Gen(quadruples, b, a);
                     EmitLabel(quadruples, "varDecl_end");
-
-                    symbolTable.PrintCurrentScope();
-
-
                 }
                 else if(node is FunctionDeclaration functionDeclaration)
                 {
-
-
-
                     
                     functionDeclaration.Gen(quadruples, b, a);
-                    
-
                 }
             
             }
-
-            //symbolTable.ExitScope();
         }
     
            

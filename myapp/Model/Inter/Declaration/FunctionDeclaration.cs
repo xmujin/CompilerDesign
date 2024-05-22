@@ -38,11 +38,8 @@ namespace myapp.Model.Inter
         public override void Gen(List<Quadruple> quadruples, int b, int a)
         {
             EmitLabel(quadruples, id.ToString());
-            symbolTable.EnterScope(id.ToString());
-            symbolTable.AddSymbol(id.ToString(), this);
+            symbolTableManager.DefineFunction(id.ToString(), id.idtype);
             body.Gen(quadruples, b, a);
-            symbolTable.ExitScope();
-            //EmitLabel(quadruples, id.ToString() + "_end");
 
         }
 

@@ -21,7 +21,9 @@ namespace myapp.Model.Inter
         {
             foreach (var variable in declarations)
             {
-                symbolTable.AddSymbol(variable.id.ToString(), variable);
+                symbolTableManager.DefineVariable(variable.id.ToString(), 4, variable.id.idtype, "0", "0");
+                variable.Gen(quadruples, b, a);
+
             }
         }
       

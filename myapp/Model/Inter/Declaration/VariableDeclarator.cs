@@ -1,9 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using myapp.Model.CodeGen;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media.Media3D;
 
 namespace myapp.Model.Inter
 {
@@ -26,10 +28,18 @@ namespace myapp.Model.Inter
         /// 变量的初始化
         /// </summary>
         [JsonProperty(Order = 3)]
-        public Node init;
-        
-        
-        public VariableDeclarator(Identifier id, Node init) : base("VariableDeclarator")
+        public Expression init;
+
+
+        public override void Gen(List<Quadruple> quadruples, int b, int a)
+        {
+            if(init != null)
+            {
+                quadruples.Add(new Quadruple("=", init.Gen(quadruples), null, id.ToString()));
+            }
+        }
+
+        public VariableDeclarator(Identifier id, Expression init) : base("VariableDeclarator")
         {
             this.id = id;
             this.init = init;
