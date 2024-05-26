@@ -1,4 +1,5 @@
 ﻿using myapp.Model.CodeGen;
+using myapp.Model.Symbols;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -33,10 +34,65 @@ namespace myapp.Model.Inter
 
         public override void Gen(List<Quadruple> quadruples, int b, int a)
         {
+            // 声明并赋值
             if(init != null)
             {
-                quadruples.Add(new Quadruple("=", init.Gen(quadruples), null, id.ToString()));
+                if(init is  LogicExpression)
+                {
+                    string ids = id.ToString();
+                    int label1 = NewLabel();
+                    int label2 = NewLabel();
+                    // 初始为0
+                    quadruples.Add(new Quadruple("=", "0", null, ids));  // 赋值为0
+                    init.trueLabel = label1;
+                    init.falseLabel = label2;
+                    init.Gen(quadruples, b, a);
+                    // 成功
+                    EmitLabel(quadruples, label1);
+                    // 赋值为1
+                    quadruples.Add(new Quadruple("=", "1", null, ids));  // 赋值为1
+                    EmitLabel(quadruples, label2);
+                }
+                else if(init is BinaryExpression be)
+                {
+                    if(be.op.ToString()  == "!=" ||
+                        be.op.ToString() == "==" ||
+                        be.op.ToString() == ">" ||
+                        be.op.ToString() == ">=" ||
+                        be.op.ToString() == "<" ||
+                        be.op.ToString() == ">="
+                    )
+                    {
+                        string ids = id.ToString();
+                        int label1 = NewLabel();
+                        int label2 = NewLabel();
+                        // 初始为0
+                        quadruples.Add(new Quadruple("=", "0", null, ids));  // 赋值为0
+                        init.trueLabel = label1;
+                        init.falseLabel = label2;
+                        init.Gen(quadruples, b, a);
+                        // 成功
+                        EmitLabel(quadruples, label1);
+                        // 赋值为1
+                        quadruples.Add(new Quadruple("=", "1", null, ids));  // 赋值为1
+                        EmitLabel(quadruples, label2);
+                        
+                    }
+                    else
+                    {
+                        quadruples.Add(new Quadruple("=", init.Gen(quadruples), null, id.ToString() + $"_{depth}")); // 其他+ - * / 等初始化
+
+                    }
+                }
+                else
+                {
+                    quadruples.Add(new Quadruple("=", init.Gen(quadruples), null, id.ToString() + $"_{depth}"));
+                }
+
+
+                
             }
+ 
         }
 
         public VariableDeclarator(Identifier id, Expression init) : base("VariableDeclarator")

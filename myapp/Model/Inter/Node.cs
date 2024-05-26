@@ -11,7 +11,7 @@ namespace myapp.Model.Inter
     public class Node
     {
         public static SymbolTableManager symbolTableManager = new SymbolTableManager();
-
+        public static int depth = 0; // 清零
 
         /// <summary>
         /// 抽象节点的类型
@@ -45,9 +45,10 @@ namespace myapp.Model.Inter
         }
 
 
+
         public virtual void Gen(List<Quadruple> quadruples, int b, int a)
         {
-
+            
         }
 
         /*public virtual List<Quadruple> Gen(List<Quadruple> quadruples, ref int line)

@@ -53,6 +53,12 @@ namespace myapp.View
 
         private void ToOperation(UseOperation operation)
         {
+            // 对一些类的静态变量进行重置
+            Program.symbolTableManager = new SymbolTableManager();
+            BinaryExpression.count = 0; // 中间变量
+            UnaryExpression.count = 0; // 负数的中间变量
+            Node.depth = 0;   // 变量作用域
+
             if (operation == UseOperation.LexicalAnalysis)
             {
                 lexerCodeBar.Visibility = Visibility.Visible;
@@ -156,16 +162,11 @@ namespace myapp.View
         /// <param name="e"></param>
         public void Sem_Click(object sender, RoutedEventArgs e)
         {
-            Program.symbolTableManager = new SymbolTableManager();
-            //Console.WriteLine("sdfsdf");
-            //right.Visibility = Visibility.Hidden;
             ToOperation(UseOperation.SemanticAnalysis);
             Lexer lex = new Lexer(code.Text);
-            //Console.WriteLine(lex.GetTokens());
             Parser parser = new Parser(lex);
             parser.Program();
             lexerCode.Text = Program.symbolTableManager.PrintSymbolTable();
-            //lexerCode.Text = Node.symbolTable.PrintScopeHistory();
 
 
 
@@ -180,10 +181,7 @@ namespace myapp.View
         /// <param name="e"></param>
         private void Code_Click(object sender, RoutedEventArgs e)
         {
-
-            Program.symbolTableManager = new SymbolTableManager();
             ToOperation(UseOperation.IntermediateCode);
-
 
             Lexer lex = new Lexer(code.Text);
             //Console.WriteLine(lex.GetTokens());
@@ -191,6 +189,11 @@ namespace myapp.View
             parser.Program();
             //res.Text = CodeGen.ShowQuadruple(parser.quadruples);
             genCode.ItemsSource = parser.quadruples;
+            foreach(var sb in parser.quadruples)
+            {
+                Console.WriteLine(sb);
+            }
+            
 
 
         }
@@ -203,7 +206,6 @@ namespace myapp.View
         /// <param name="e"></param>
         private void Target_Click(object sender, RoutedEventArgs e)
         {
-            Program.symbolTableManager = new SymbolTableManager();
             ToOperation(UseOperation.SemanticAnalysis);
             Lexer lex = new Lexer(code.Text);
             Parser parser = new Parser(lex);

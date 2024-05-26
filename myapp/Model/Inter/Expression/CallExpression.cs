@@ -1,5 +1,6 @@
 ﻿using myapp.Model.CodeGen;
 using myapp.Model.Lexer;
+using myapp.Model.Symbols;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,7 +44,15 @@ namespace myapp.Model.Inter
                 }
                 else
                 {
-                    quadruples.Add(new Quadruple("param", arg.Gen(quadruples), null, "p" + (++paramcount)));
+                    if (arg is Identifier) // 如果是标志符，leftRes保存的是变量名
+                    {
+                        VariableSymbol a = (VariableSymbol)symbolTableManager.Lookup(arg.ToString());
+
+                        string param = a.name + "_" + a.scope;
+                        quadruples.Add(new Quadruple("param", param, null, null));
+                    }
+                    else 
+                        quadruples.Add(new Quadruple("param", arg.Gen(quadruples), null, null));
                 }
                 
             }

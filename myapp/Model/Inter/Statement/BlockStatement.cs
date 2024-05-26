@@ -30,6 +30,7 @@ namespace myapp.Model.Inter
         /// <param name="a"></param>
         public override void Gen(List<Quadruple> quadruples, int b, int a)
         {
+            depth++;
             symbolTableManager.EnterScope();
             // 处理变量声明
             foreach (var node in body) 
@@ -45,6 +46,7 @@ namespace myapp.Model.Inter
                     //int begin = NewLabel();
                     int end = NewLabel();
                     ifs.Gen(quadruples,0, end);
+                    EmitLabel(quadruples, end);
                 }
                 else if(node is WhileStatement ws)
                 {
@@ -57,6 +59,11 @@ namespace myapp.Model.Inter
                     int end = NewLabel();
                     dws.Gen(quadruples, 0, end);
                     //EmitLabel(quadruples, end);
+                }
+                else if(node is ExpressionStatement es)
+                {
+                    Console.WriteLine("我是表达式语句" );
+                    es.Gen(quadruples, b, a);
                 }
                 else // 其他语句
                 {

@@ -73,6 +73,8 @@ namespace myapp.Model.Symbols
             }
         }
 
+
+
         public string PrintSymbolTable()
         {
             StringBuilder stringBuilder = new StringBuilder();

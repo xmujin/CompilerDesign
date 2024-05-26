@@ -14,8 +14,9 @@ namespace myapp.Model.Inter
         [JsonProperty(Order = 2)]
         public Token op;
 
-        
-
+        public int trueLabel; // 为真时跳转的标签
+        public int falseLabel;
+        public static readonly int fall = 333;
         public Expression(string type) : base(type)
         {
         }

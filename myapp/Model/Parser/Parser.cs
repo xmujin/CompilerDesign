@@ -68,9 +68,9 @@ namespace myapp.Model.Parser
             js.body.AddRange(VdeclFdecls());
             //int begin = js.NewLabel();
             //int end = js.NewLabel();
-            js.EmitLabel(quadruples, "program_begin");
+            
             js.Gen(quadruples, 0, 0);
-            js.EmitLabel(quadruples, "program_end");
+
 
 
             CodeGen.CodeGen.ShowQuadruple(quadruples);
@@ -121,10 +121,6 @@ namespace myapp.Model.Parser
             Token tok = look; // 获取标识符
             Match(Tag.ID);
             Identifier id = new Identifier(((Word)curType).lexeme, ((Word)tok).lexeme);
-     //       Id id = new Id((Word)tok, curType, used); // 将标识符及标识符对应的类型信息存入到符号表中
-       //     top.Put(tok, id);
-            used = used + curType.width;
-
             if (look.tag == '(')
             {
                 return Fdecl(id);
@@ -161,14 +157,13 @@ namespace myapp.Model.Parser
                 Match(';');
                 return v;
             }
-            else if(look.tag == '=')
+            else if(look.tag == '=') // 赋值语句
             {       
                 Match('=');
- 
                 v.declarations.Add(new VariableDeclarator(topid, Bool()));
 
-                VariableDeclaration next = Vdecl(topid);
-                v.declarations.AddRange(next.declarations);
+
+                Match(';');
                 return v;
             }
 
@@ -279,7 +274,7 @@ namespace myapp.Model.Parser
 
         Node Statement()
         {
-            if(look.tag == Tag.BASIC)
+            if(look.tag == Tag.BASIC)  // 变量的声明
             {
                 return VdeclFdecl();
             }
@@ -553,25 +548,21 @@ namespace myapp.Model.Parser
         /// 语句
         /// Term  -> Unary Term'
         /// Term' -> * Unary Term'
-        ///          | / Unary Term'
+        ///          | / Unary Term
+        ///          | % Unary Term'
         ///          | ε
         /// </summary>
         /// <returns></returns>
         Expression Term()
         {
-            
-
             Expression x = Unary();
-            while (look.tag == '*' || look.tag == '/')
+            while (look.tag == '*' || look.tag == '/' || look.tag == '%')
             {
                 Token tok = look;
                 Move();
                 x = new BinaryExpression(tok, x, Unary());
             }
             return x;
-
-
-
         }
 
       
@@ -587,8 +578,12 @@ namespace myapp.Model.Parser
         {
             if (look.tag == '!' || look.tag == '-')
             {
+                Token t = look;
                 Move();
-                return Unary();
+                Expression e = Factor();
+                UnaryExpression ue = new UnaryExpression(look, e);
+
+                return ue;
             }
             else
             {
@@ -639,8 +634,7 @@ namespace myapp.Model.Parser
                 {
                     Match('(');
                     // 函数调用作为因子
-                    
-                    Match('(');
+                   
                     CallExpression callExpression = new CallExpression(new Identifier("int", id.lexeme), Argumentlist());
                     Match(')');
                     Match(';');

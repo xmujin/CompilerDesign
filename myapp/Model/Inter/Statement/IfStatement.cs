@@ -5,6 +5,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using myapp.Model.CodeGen;
+using myapp.Model.Symbols;
 using Newtonsoft.Json;
 namespace myapp.Model.Inter
 {
@@ -42,31 +43,51 @@ namespace myapp.Model.Inter
         // b表示if语句之前，a表示之后
         public override void Gen(List<Quadruple> quadruples, int b, int a)
         {
-            Quadruple trueLabel = null;
-            int label1 = NewLabel();
-            int label2 = NewLabel();
 
-            if (test is BinaryExpression _test)
+            if(alternate != null)
             {
-                trueLabel = new Quadruple("j" + _test.op.ToString(), _test.left.ToString(), _test.right.ToString(), "L" + label1);
+                int label2 = NewLabel();   // B.false
+
+                if (test is BinaryExpression _test)
+                {
+                    _test.trueLabel = Expression.fall;
+                    _test.falseLabel = label2;
+
+                    _test.Gen(quadruples, b, a);
+                    //EmitLabel(quadruples, label1); // if语句开始
+                    consequent.Gen(quadruples, b, a);
+                    quadruples.Add(new Quadruple("jmp", null, null, "L" + a)); // 跳转到if-else末尾
+                    EmitLabel(quadruples, label2); // else语句开始
+                    alternate.Gen(quadruples, label2, a);
+
+
+                }
+                else if(test is LogicExpression test1)  // 逻辑表达式
+                {
+                    test1.trueLabel = Expression.fall;
+                    test1.falseLabel = label2;
+
+                    test1.Gen(quadruples, b, a);
+                    //EmitLabel(quadruples, label1); // if语句开始
+                    consequent.Gen(quadruples, b, a);
+                    quadruples.Add(new Quadruple("jmp", null, null, "L" + a)); // 跳转到if-else末尾
+                    EmitLabel(quadruples, label2); // else语句开始
+                    alternate.Gen(quadruples, label2, a);
+
+
+                }
+
+            }
+            else // 单个if语句
+            {
+                test.trueLabel = Expression.fall;
+                test.falseLabel = a;
+                test.Gen(quadruples, b, a);
+                consequent.Gen(quadruples, b, a);
+
+                
             }
 
-            
-
-            Quadruple falseLabel = new Quadruple("j", null, null, "L" + label2);
-
-            quadruples.Add(trueLabel);
-            quadruples.Add(falseLabel);
-            EmitLabel(quadruples, label1); // if语句开始
-
-            consequent.Gen(quadruples, label1, a);
-            
-            quadruples.Add(new Quadruple("j", null, null, "L" + a)); // if结束
-
-            EmitLabel(quadruples, label2); // else语句开始
-            alternate.Gen(quadruples, label2, a);
-
-            EmitLabel(quadruples, a); // if 语句结束
 
 
         }

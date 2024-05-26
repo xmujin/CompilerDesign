@@ -15,6 +15,8 @@ namespace myapp.Model.Symbols
         public SymbolTable Parent { get; }
         public readonly List<SymbolTable> _children;
 
+        int offset = 0;
+
         public SymbolTable(SymbolTable parent = null)
         {
             _symbols = new Dictionary<string, Symbol>();
@@ -32,6 +34,11 @@ namespace myapp.Model.Symbols
                 return false; // Symbol already exists in the current scope
             }
             _symbols[symbol.name] = symbol;
+            if(symbol is VariableSymbol vs)
+            {
+                offset += 2;
+                vs.offset = offset;
+            }
             return true;
         }
 
@@ -44,10 +51,40 @@ namespace myapp.Model.Symbols
             return Parent?.Lookup(name); // Recursive lookup in parent scopes
         }
 
+        /// <summary>
+        /// 向下查找
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public Symbol Lookdown(string name, string scope)
+        {
+            if (_symbols.TryGetValue(name, out var symbol))
+            {
+                VariableSymbol vs = symbol as VariableSymbol;
+                if (vs.name == name && vs.scope == scope)
+                    return vs;
+            }
+            foreach(var tb in  _children) 
+            {
+                if (tb._symbols.TryGetValue(name, out var sb))
+                {
+                    VariableSymbol vs = sb as VariableSymbol;
+                    if (vs.name == name && vs.scope == scope)
+                        return vs;
+                }
+            }
+            return null;
+
+        }
+
         private void AddChild(SymbolTable child)
         {
             _children.Add(child);
         }
+
+
+
+
 
 
 

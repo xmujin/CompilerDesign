@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace myapp.Model.Inter
 {
@@ -37,9 +38,15 @@ namespace myapp.Model.Inter
 
         public override void Gen(List<Quadruple> quadruples, int b, int a)
         {
-            EmitLabel(quadruples, id.ToString());
+          
+            /// 添加函数开始标签
+            quadruples.Add(new Quadruple("func", id.ToString(), "begin", null));
+
             symbolTableManager.DefineFunction(id.ToString(), id.idtype);
             body.Gen(quadruples, b, a);
+
+            /// 添加函数结束标签
+            quadruples.Add(new Quadruple("func", id.ToString(), "end", null));
 
         }
 

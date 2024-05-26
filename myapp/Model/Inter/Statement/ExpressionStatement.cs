@@ -27,7 +27,15 @@ namespace myapp.Model.Inter
         /// <param name="a"></param>
         public override void Gen(List<Quadruple> quadruples, int b, int a)
         {
-            expression.Gen(quadruples, b, a);
+            if(expression is CallExpression ce)
+            {
+                ce.Gen(quadruples);
+            }
+            else
+            {
+                expression.Gen(quadruples, b, a);
+            }
+            
         }
 
 

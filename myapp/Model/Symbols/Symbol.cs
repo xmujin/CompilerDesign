@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -31,6 +32,8 @@ namespace myapp.Model.Symbols
         public int size;
         public string init;
         public string scope;
+        public int offset;
+        public bool isUsed = false;
         public VariableSymbol(string name, int size,string type, string init, string scope) : base(name, type)
         {
             this.size = size;
