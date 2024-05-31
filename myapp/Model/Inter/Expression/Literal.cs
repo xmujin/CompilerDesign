@@ -1,10 +1,12 @@
 ﻿using myapp.Model.CodeGen;
+using myapp.Model.Symbols;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace myapp.Model.Inter
 {
@@ -45,5 +47,32 @@ namespace myapp.Model.Inter
             return raw;
         }
 
+        public override void Gen(List<Quadruple> quadruples, int b, int a)
+        {
+
+            string res = raw;
+
+
+            if (trueLabel != fall && falseLabel != fall)
+            {
+                quadruples.Add(new Quadruple("jne", res, "0", "L" + trueLabel));
+                quadruples.Add(new Quadruple("jmp", null, null, "L" + falseLabel));
+
+            }
+            else if (trueLabel != fall)
+            {
+                quadruples.Add(new Quadruple("jne", res, "0", "L" + trueLabel));
+            }
+            else if (falseLabel != fall)
+            {
+                quadruples.Add(new Quadruple("je", res, "0", "L" + falseLabel));
+            }
+            else
+            {
+
+            }
+
+
+        }
     }
 }

@@ -30,22 +30,14 @@ namespace myapp.Model.Inter
         public override void Gen(List<Quadruple> quadruples, int b, int a)
         {
             int begin = NewLabel();
-            int truelabel = NewLabel();
-            EmitLabel(quadruples, begin);
-            //test.Gen(quadruples);
-            
-            if (test.ToString() == "!=")
-            {
-                BinaryExpression be = test as BinaryExpression;
-                quadruples.Add(new Quadruple("jne", be.left.ToString(), be.right.ToString(), "L" + truelabel));
-            }
-            quadruples.Add(new Quadruple("j", null, null, "L" + a));
+            test.trueLabel = Expression.fall;
+            test.falseLabel = a;
 
-            EmitLabel(quadruples, truelabel);
-
+            EmitLabel(quadruples, begin); // 发射标签
+            test.Gen(quadruples, b, a);
             // 生成循环体语句
             body.Gen(quadruples, b, a);
-            quadruples.Add(new Quadruple("j", null, null, "L" + begin));
+            quadruples.Add(new Quadruple("jmp", null, null, "L" + begin));
 
         }
 

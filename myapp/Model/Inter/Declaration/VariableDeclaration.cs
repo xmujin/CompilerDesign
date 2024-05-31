@@ -28,8 +28,17 @@ namespace myapp.Model.Inter
         {
             foreach (var variable in declarations)
             {
-                symbolTableManager.DefineVariable(variable.id.ToString(), 2, variable.id.idtype, "0", "" + depth);
-                variable.Gen(quadruples, b, a);
+                if(depth != 0)
+                {
+                    symbolTableManager.DefineVariable(variable.id.ToString(), 2, variable.id.idtype, "0", "" + depth);
+                }
+                else
+                {
+                    symbolTableManager.DefineVariable(variable.id.ToString(), 2, variable.id.idtype, variable.init.ToString(), "" + depth);
+                }
+                
+                
+                variable.Gen(quadruples, b, a); // 生成变量的四元式
 
             }
         }

@@ -53,7 +53,7 @@ namespace myapp.Model.Inter
                     _test.trueLabel = Expression.fall;
                     _test.falseLabel = label2;
 
-                    _test.Gen(quadruples, b, a);
+                     _test.Gen(quadruples, b, a);
                     //EmitLabel(quadruples, label1); // if语句开始
                     consequent.Gen(quadruples, b, a);
                     quadruples.Add(new Quadruple("jmp", null, null, "L" + a)); // 跳转到if-else末尾

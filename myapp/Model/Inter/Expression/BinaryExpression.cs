@@ -35,8 +35,9 @@ namespace myapp.Model.Inter
         public override void Gen(List<Quadruple> quadruples, int b, int a) // 当为条件判断时进行的跳转
         {
 
-       
-        
+
+            
+
             string leftRes = left.Gen(quadruples);
             if (left is Identifier) // 如果是标志符，leftRes保存的是变量名
             {
@@ -44,6 +45,8 @@ namespace myapp.Model.Inter
                 leftRes = z.name + "_" + z.scope;
 
             }
+
+
             string rightRes = right.Gen(quadruples);
             if (right is Identifier)
             {
@@ -51,11 +54,18 @@ namespace myapp.Model.Inter
                 rightRes = x.name + "_" + x.scope;
 
             }
+            
+
+
 
             string option = null;
             if(op.ToString() == ">")
             {
                 option = "jg";
+            }
+            else if(op.ToString() == "%")
+            {
+                option = "jne";
             }
             else if(op.ToString() == "<") 
             {
@@ -78,14 +88,32 @@ namespace myapp.Model.Inter
                 option = "jne";
             }
 
-            if (trueLabel != fall && falseLabel !=  fall) 
+            if (trueLabel != fall && falseLabel !=  fall)    // 用于
             {
+                if (op.ToString() == "%")
+                {
+                    string temp = this.Gen(quadruples);
+                    quadruples.Add(new Quadruple(option, temp, "0", "L" + trueLabel));
+                    quadruples.Add(new Quadruple("jmp", null, null, "L" + falseLabel));
+                    return;
+                }
+
+
                 quadruples.Add(new Quadruple(option, leftRes, rightRes, "L" + trueLabel));
                 quadruples.Add(new Quadruple("jmp", null, null, "L" + falseLabel));
 
             }
             else if(trueLabel != fall)
             {
+                if (op.ToString() == "%")
+                {
+                    string temp = this.Gen(quadruples);
+                    quadruples.Add(new Quadruple(option, temp, "0", "L" + trueLabel));
+       
+                    return;
+                }
+
+
                 quadruples.Add(new Quadruple(option, leftRes, rightRes, "L" + trueLabel));
             }
             else if(falseLabel != fall)
@@ -113,7 +141,17 @@ namespace myapp.Model.Inter
                 else
                 {
                     option = "je";
-                }    
+                }
+
+                if (op.ToString() == "%")
+                {
+                    string temp = this.Gen(quadruples);
+                    quadruples.Add(new Quadruple(option, temp, "0", "L" + falseLabel));
+
+                    return;
+                }
+
+
                 quadruples.Add(new Quadruple(option, leftRes, rightRes, "L" + falseLabel));
             }
             else
@@ -141,8 +179,6 @@ namespace myapp.Model.Inter
                 rightRes = a.name + "_" + a.scope;
 
             }
-
-
 
 
             string temp = "#t" + (++count);

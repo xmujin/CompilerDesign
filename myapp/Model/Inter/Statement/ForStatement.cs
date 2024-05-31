@@ -13,7 +13,7 @@ namespace myapp.Model.Inter
 
 
 
-        public VariableDeclaration init;
+        public Statement init;
         /// <summary>
         /// 判断表达式
         /// </summary>
@@ -31,30 +31,36 @@ namespace myapp.Model.Inter
 
 
 
+
+
             // 赋值语句生成
             
             init.Gen(quadruples, b, a);
 
+
+
+
+
             int begin = NewLabel();
-            int truelabel = NewLabel();
-            if (test.ToString() == "!=")
-            {
-                BinaryExpression be = test as BinaryExpression;
-                quadruples.Add(new Quadruple("jne", be.left.ToString(), be.right.ToString(), "L" + truelabel));
-            }
-            quadruples.Add(new Quadruple("j", null, null, "L" + a));
-            EmitLabel(quadruples, truelabel);
+            test.trueLabel = Expression.fall;   // 不需要生成true的跳转
+            test.falseLabel = a;
+
+            EmitLabel(quadruples, begin);
+            test.Gen(quadruples, b, a);
             // 生成循环体语句
             body.Gen(quadruples, b, a);
-            update.Gen(quadruples);
-            quadruples.Add(new Quadruple("j", null, null, "L" + begin));
+
+
+            update.Gen(quadruples, b, a); // 生成
+
+            quadruples.Add(new Quadruple("jmp", null, null, "L" + begin));
 
 
 
 
 
         }
-        public ForStatement(VariableDeclaration init, Expression test, Expression update, Statement body) : base("ForStatement")
+        public ForStatement(Statement init, Expression test, Expression update, Statement body) : base("ForStatement")
         {
             this.init = init;
             this.test = test;

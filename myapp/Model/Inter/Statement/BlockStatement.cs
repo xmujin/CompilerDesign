@@ -65,6 +65,12 @@ namespace myapp.Model.Inter
                     Console.WriteLine("我是表达式语句" );
                     es.Gen(quadruples, b, a);
                 }
+                else if(node is ForStatement fs)
+                {
+                    int end = NewLabel();
+                    fs.Gen(quadruples, 0, end);
+                    EmitLabel(quadruples, end);
+                }
                 else // 其他语句
                 {
                     

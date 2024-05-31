@@ -31,11 +31,7 @@ namespace myapp.Model.Inter
                 
                 if(node is VariableDeclaration variableDeclaration)
                 {
-                    //int begin = NewLabel();
-                    //int end = NewLabel();
-                    EmitLabel(quadruples, "varDecl_begin");
                     variableDeclaration.Gen(quadruples, b, a);
-                    EmitLabel(quadruples, "varDecl_end");
                 }
                 else if(node is FunctionDeclaration functionDeclaration)
                 {

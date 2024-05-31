@@ -10,7 +10,7 @@ namespace myapp.Model.TargetCode
     public class GenTarget
     {
 
-
+        int offset = 0;
         List<Quadruple> quadruples;
 
         public GenTarget(List<Quadruple> quadruples) 
@@ -68,11 +68,13 @@ namespace myapp.Model.TargetCode
             {
                 if (symbol is VariableSymbol vs)
                 {
-                    sb.AppendLine($"\t{symbol.name}\tdw\t0");
+                    sb.AppendLine($"\t{vs.name}_{vs.scope}\tdw\t{vs.init}"); // 定义全局变量
                 }
             }
             sb.AppendLine("    message db 'Enter a number(-_-): ',0dh, 0ah, '$'\r\n    num_buffer db 16\r\n               db 15 dup(0)\r\n    newline db 0dh, 0ah, '$'\r\n    output_buffer db 16 dup(0)  ; 用于存储转换后的数字字符串 (最多5位数+1个终止符)\r\n    output_message db 'The number is: $'");
             sb.AppendLine("data ends");
+
+
             return sb.ToString();
         }
 
@@ -126,11 +128,7 @@ namespace myapp.Model.TargetCode
                 else if(quadruple.op == "=") //赋值语句
                 {
 
-
-                    //if (quadruple.result)
                     string id = quadruple.result;    // 获取变量名   以name_scope 形式存在
-
-                                                     
                     int lastIndex = id.LastIndexOf('_');// 以最后一个下划线分隔
                     string name = id.Substring(0, lastIndex);
                     string scope = id.Substring(lastIndex + 1);
@@ -142,36 +140,81 @@ namespace myapp.Model.TargetCode
                     // 变量未使用   进行栈分配
                     if (vs.scope != "0" && vs.isUsed == false)
                     {
-                        vs.isUsed = false;
+                        vs.isUsed = true;
                         //stringBuilder.AppendLine($"\tpop ax"); // 使用ax寄存器
                         //stringBuilder.AppendLine("\tmov bp, sp"); // 保存栈基地址
                         
 
 
-                        if(quadruple.arg1 == "result" || quadruple.arg1.StartsWith('#')) // 以t开头都为临时变量，存放与ax
+                        if(quadruple.arg1 == "result" || quadruple.arg1.StartsWith('#')) // 以t开头或名为result都为临时变量，存放与ax
                         {
-                            stringBuilder.AppendLine($"\tpop ax"); // 使用ax寄存器
+                            offset += 2;
+                            vs.offset = offset;
+                            if(quadruple.arg1 != "result")
+                                stringBuilder.AppendLine($"\tpop ax"); // 使用ax寄存器
                             stringBuilder.AppendLine("\tsub sp, 2"); // 分配2字节空间
                             stringBuilder.AppendLine($"\tmov word ptr [bp - {vs.offset}], ax"); // 使用ax寄存器
                         }
                         else if(judge)    // 当arg1 为数字时  直接赋值
                         {
+                            offset += 2;
+                            vs.offset = offset;
                             stringBuilder.AppendLine($"\tmov ax, {num}"); // 使用ax寄存器
+                            stringBuilder.AppendLine("\tsub sp, 2"); // 分配2字节空间
+                            stringBuilder.AppendLine($"\tmov word ptr [bp - {vs.offset}], ax"); // 使用ax寄存器
+                        }
+                        else // 两个普通变量赋值
+                        {
+                            string name1 = quadruple.arg1.Substring(0, quadruple.arg1.LastIndexOf('_'));
+                            string scope1 = quadruple.arg1.Substring(quadruple.arg1.LastIndexOf('_') + 1);
+                            VariableSymbol vs1 = (VariableSymbol)symbolTabelManager._globalScope.Lookdown(name1, scope1);
+                            offset += 2;
+                            vs.offset = offset;
+                            stringBuilder.AppendLine($"\tmov ax, [bp - {vs1.offset}]"); // 使用ax寄存器
                             stringBuilder.AppendLine("\tsub sp, 2"); // 分配2字节空间
                             stringBuilder.AppendLine($"\tmov word ptr [bp - {vs.offset}], ax"); // 使用ax寄存器
                         }
 
 
+
                             
                     }
-                    else if(vs.scope != "0" && vs.isUsed == true)
+                    else if(vs.scope != "0" && vs.isUsed == true && IsTemp(quadruple.arg1)) 
                     {
+
+
                         stringBuilder.AppendLine($"\tpop ax"); // 使用ax寄存器
                         stringBuilder.AppendLine($"\tmov word ptr [bp - {vs.offset}], ax"); // 使用ax寄存器
 
 
                     }
+                    else if(vs.scope != "0" && vs.isUsed == true && IsVariable(quadruple.arg1))    // 赋值为变量的情况
+                    {
+                        string name1 = quadruple.arg1.Substring(0, quadruple.arg1.LastIndexOf('_'));
+                        string scope1 = quadruple.arg1.Substring(quadruple.arg1.LastIndexOf('_') + 1);
+                        VariableSymbol vs1 = (VariableSymbol)symbolTabelManager._globalScope.Lookdown(name1, scope1);
+                        stringBuilder.AppendLine($"\tmov ax, [bp - {vs1.offset}]"); // 使用ax寄存器
+                        stringBuilder.AppendLine($"\tmov  [bp - {vs.offset}], ax"); // 使用ax寄存器
+                    }
+                    else if (vs.scope != "0" && vs.isUsed == true && quadruple.arg1 == "result")    // 赋值为变量的情况
+                    {
+                        stringBuilder.AppendLine($"\tpop ax"); // 使用ax寄存器
+                        stringBuilder.AppendLine($"\tmov  [bp - {vs.offset}], ax"); // 使用ax寄存器
+                    }
 
+                    else if(vs.scope != "0" && vs.isUsed == true && int.TryParse(quadruple.arg1, out int n)) // 赋值为数字的情况
+                    {
+                        stringBuilder.AppendLine($"\tmov ax, {num}"); // 使用ax寄存器
+                        stringBuilder.AppendLine($"\tmov word ptr [bp - {vs.offset}], ax"); // 使用ax寄存器
+                    }
+
+                    else if(vs.scope == "0" && IsTemp(quadruple.arg1))
+                    {
+
+                        stringBuilder.AppendLine($"\tpop ax"); // 使用ax寄存器
+                        stringBuilder.AppendLine($"\tmov  {vs.name}_{vs.scope}, ax"); // 使用ax寄存器
+
+                    }
 
 
 
@@ -184,7 +227,10 @@ namespace myapp.Model.TargetCode
                     string name = id.Substring(0, lastIndex);
                     string scope = id.Substring(lastIndex + 1);
                     VariableSymbol vs = (VariableSymbol)symbolTabelManager._globalScope.Lookdown(name, scope);
-                    stringBuilder.AppendLine($"\tpush [bp - {vs.offset}]"); // 将参数进行入栈
+                    if(vs.scope != "0")
+                        stringBuilder.AppendLine($"\tpush [bp - {vs.offset}]"); // 将参数进行入栈
+                    else
+                        stringBuilder.AppendLine($"\tpush {vs.name}_{vs.scope}"); // 将参数进行入栈
 
 
                 }
@@ -236,7 +282,10 @@ namespace myapp.Model.TargetCode
                             string name = id.Substring(0, lastIndex);
                             string scope = id.Substring(lastIndex + 1);
                             VariableSymbol vs = (VariableSymbol)symbolTabelManager._globalScope.Lookdown(name, scope);
-                            stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                            if(scope != "0")
+                                stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                            else
+                                stringBuilder.AppendLine($"\tmov ax, {vs.name}_{vs.scope}");
                             if (quadruple.op == "+")
                             {
                                 stringBuilder.AppendLine($"\tadd ax, {a}");
@@ -275,16 +324,22 @@ namespace myapp.Model.TargetCode
                             string name = id.Substring(0, lastIndex);
                             string scope = id.Substring(lastIndex + 1);
                             VariableSymbol vs = (VariableSymbol)symbolTabelManager._globalScope.Lookdown(name, scope);
-                
+                            
                             if (quadruple.op == "+")
                             {
-                                stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                                if (scope != "0")
+                                    stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                                else
+                                    stringBuilder.AppendLine($"\tmov ax, {vs.name}_{vs.scope}");
                                 stringBuilder.AppendLine($"\tadd ax, {b}");
                                 stringBuilder.AppendLine($"\tpush ax");
                             }
                             else
                             {
-                                stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                                if (scope != "0")
+                                    stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                                else
+                                    stringBuilder.AppendLine($"\tmov ax, {vs.name}_{vs.scope}");
                                 stringBuilder.AppendLine($"\tsub ax, {b}");
                                 stringBuilder.AppendLine($"\tpush ax");
                             }
@@ -322,14 +377,20 @@ namespace myapp.Model.TargetCode
                             if (quadruple.op == "+")
                             {
                                 stringBuilder.AppendLine($"\tpop ax");
-                                stringBuilder.AppendLine($"\tmov dx, [bp - {vs.offset}]");
+                                if (scope != "0")
+                                    stringBuilder.AppendLine($"\tmov dx, [bp - {vs.offset}]");
+                                else
+                                    stringBuilder.AppendLine($"\tmov dx, {vs.name}_{vs.scope}");
                                 stringBuilder.AppendLine($"\tadd ax, dx");
 
                             }
                             else
                             {
                                 stringBuilder.AppendLine($"\tpop ax");
-                                stringBuilder.AppendLine($"\tmov dx, [bp - {vs.offset}]");
+                                if (scope != "0")
+                                    stringBuilder.AppendLine($"\tmov dx, [bp - {vs.offset}]");
+                                else
+                                    stringBuilder.AppendLine($"\tmov dx, {vs.name}_{vs.scope}");
                                 stringBuilder.AppendLine($"\tsub ax, dx");
                             }
                             stringBuilder.AppendLine($"\tpush ax");
@@ -346,14 +407,20 @@ namespace myapp.Model.TargetCode
                             if (quadruple.op == "+")
                             {
                                 stringBuilder.AppendLine($"\tpop dx");
-                                stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                                if (scope != "0")
+                                    stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                                else
+                                    stringBuilder.AppendLine($"\tmov ax, {vs.name}_{vs.scope}");
                                 stringBuilder.AppendLine($"\tadd ax, dx");
 
                             }
                             else
                             {
                                 stringBuilder.AppendLine($"\tpop dx");
-                                stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                                if (scope != "0")
+                                    stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                                else
+                                    stringBuilder.AppendLine($"\tmov ax, {vs.name}_{vs.scope}");
                                 stringBuilder.AppendLine($"\tsub ax, dx");
                             }
                             stringBuilder.AppendLine($"\tpush ax");
@@ -375,15 +442,29 @@ namespace myapp.Model.TargetCode
 
                             if (quadruple.op == "+")
                             {
-                                stringBuilder.AppendLine($"\tmov ax, [bp - {vs1.offset}]");
-                                stringBuilder.AppendLine($"\tmov dx, [bp - {vs2.offset}]");
+                                if (scope1 != "0")
+                                    stringBuilder.AppendLine($"\tmov ax, [bp - {vs1.offset}]");
+                                else
+                                    stringBuilder.AppendLine($"\tmov ax, {vs1.name}_{vs1.scope}");
+
+                                if (scope2 != "0")
+                                    stringBuilder.AppendLine($"\tmov dx, [bp - {vs2.offset}]");
+                                else
+                                    stringBuilder.AppendLine($"\tmov dx, {vs2.name}_{vs2.scope}");
                                 stringBuilder.AppendLine($"\tadd ax, dx");
 
                             }
                             else
                             {
-                                stringBuilder.AppendLine($"\tmov ax, [bp - {vs1.offset}]");
-                                stringBuilder.AppendLine($"\tmov dx, [bp - {vs2.offset}]");
+                                if (scope1 != "0")
+                                    stringBuilder.AppendLine($"\tmov ax, [bp - {vs1.offset}]");
+                                else
+                                    stringBuilder.AppendLine($"\tmov ax, {vs1.name}_{vs1.scope}");
+
+                                if (scope2 != "0")
+                                    stringBuilder.AppendLine($"\tmov dx, [bp - {vs2.offset}]");
+                                else
+                                    stringBuilder.AppendLine($"\tmov dx, {vs2.name}_{vs2.scope}");
                                 stringBuilder.AppendLine($"\tsub ax, dx");
                             }
 
@@ -454,15 +535,18 @@ namespace myapp.Model.TargetCode
                             }
                             stringBuilder.AppendLine($"\tpush ax");
                         }
-                        else
+                        else // 参数2不是临时变量
                         {
-                            string id = quadruple.arg2;    // 获取变量名   以name_scope 形式存在
-                            int lastIndex = id.LastIndexOf('_');// 以最后一个下划线分隔
-                            string name = id.Substring(0, lastIndex);
-                            string scope = id.Substring(lastIndex + 1);
-                            VariableSymbol vs = (VariableSymbol)symbolTabelManager._globalScope.Lookdown(name, scope);
-                            
-                            stringBuilder.AppendLine($"\tmov dx, [bp - {vs.offset}]");
+                            string id2 = quadruple.arg2;    // 获取变量名   以name_scope 形式存在
+                            int lastIndex2 = id2.LastIndexOf('_');// 以最后一个下划线分隔
+                            string name2 = id2.Substring(0, lastIndex2);
+                            string scope2 = id2.Substring(lastIndex2 + 1);
+                            VariableSymbol vs2 = (VariableSymbol)symbolTabelManager._globalScope.Lookdown(name2, scope2);
+                            if (scope2 != "0")
+                                stringBuilder.AppendLine($"\tmov ax, [bp - {vs2.offset}]");
+                            else
+                                stringBuilder.AppendLine($"\tmov ax, {vs2.name}_{vs2.scope}");
+
                             if (quadruple.op == "*")
                             {
                                 stringBuilder.AppendLine($"\tmov ax, {a}");
@@ -485,7 +569,7 @@ namespace myapp.Model.TargetCode
                     }
                     else if (!left && right) // 左变量  右边数字
                     {
-                        if (quadruple.arg2.StartsWith('#'))  // 临时变量
+                        if (quadruple.arg1.StartsWith('#'))  // 临时变量
                         {
                             if (quadruple.op == "*")
                             {
@@ -508,15 +592,17 @@ namespace myapp.Model.TargetCode
                             }
                             stringBuilder.AppendLine($"\tpush ax");
                         }
-                        else
+                        else  // 左为普通变量
                         {
                             string id = quadruple.arg1;    // 获取变量名   以name_scope 形式存在
                             int lastIndex = id.LastIndexOf('_');// 以最后一个下划线分隔
                             string name = id.Substring(0, lastIndex);
                             string scope = id.Substring(lastIndex + 1);
                             VariableSymbol vs = (VariableSymbol)symbolTabelManager._globalScope.Lookdown(name, scope);
-
-                            stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                            if (scope != "0")
+                                stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                            else
+                                stringBuilder.AppendLine($"\tmov ax, {vs.name}_{vs.scope}");
                             if (quadruple.op == "*")
                             {
 
@@ -574,14 +660,20 @@ namespace myapp.Model.TargetCode
                             if (quadruple.op == "*")
                             {
                                 stringBuilder.AppendLine($"\tpop ax");
-                                stringBuilder.AppendLine($"\tmov dx, [bp - {vs.offset}]");
+                                if (scope != "0")
+                                    stringBuilder.AppendLine($"\tmov dx, [bp - {vs.offset}]");
+                                else
+                                    stringBuilder.AppendLine($"\tmov dx, {vs.name}_{vs.scope}");
                                 stringBuilder.AppendLine($"\tmul dx");
 
                             }
                             else
                             {
                                 stringBuilder.AppendLine($"\tpop ax");
-                                stringBuilder.AppendLine($"\tmov dx, [bp - {vs.offset}]");
+                                if (scope != "0")
+                                    stringBuilder.AppendLine($"\tmov dx, [bp - {vs.offset}]");
+                                else
+                                    stringBuilder.AppendLine($"\tmov dx, {vs.name}_{vs.scope}");
                                 stringBuilder.AppendLine($"\tdiv dl");
                                 if (quadruple.op == "%")
                                 {
@@ -607,14 +699,20 @@ namespace myapp.Model.TargetCode
                             if (quadruple.op == "*")
                             {
                                 stringBuilder.AppendLine($"\tpop dx");
-                                stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                                if (scope != "0")
+                                    stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                                else
+                                    stringBuilder.AppendLine($"\tmov ax, {vs.name}_{vs.scope}");
                                 stringBuilder.AppendLine($"\tmul dx");
 
                             }
                             else
                             {
                                 stringBuilder.AppendLine($"\tpop dx");
-                                stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                                if (scope != "0")
+                                    stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                                else
+                                    stringBuilder.AppendLine($"\tmov ax, {vs.name}_{vs.scope}");
                                 stringBuilder.AppendLine($"\tdiv dl");
                                 if (quadruple.op == "%")
                                 {
@@ -643,15 +741,29 @@ namespace myapp.Model.TargetCode
 
                             if (quadruple.op == "*")
                             {
-                                stringBuilder.AppendLine($"\tmov ax, [bp - {vs1.offset}]");
-                                stringBuilder.AppendLine($"\tmov dx, [bp - {vs2.offset}]");
+                                if (scope1 != "0")
+                                    stringBuilder.AppendLine($"\tmov ax, [bp - {vs1.offset}]");
+                                else
+                                    stringBuilder.AppendLine($"\tmov ax, {vs1.name}_{vs1.scope}");
+                                if (scope1 != "0")
+                                    stringBuilder.AppendLine($"\tmov dx, [bp - {vs2.offset}]");
+                                else
+                                    stringBuilder.AppendLine($"\tmov dx, {vs2.name}_{vs2.scope}");
+       
                                 stringBuilder.AppendLine($"\tmul dx");
 
                             }
                             else
                             {
-                                stringBuilder.AppendLine($"\tmov ax, [bp - {vs1.offset}]");
-                                stringBuilder.AppendLine($"\tmov dx, [bp - {vs2.offset}]");
+                                if (scope1 != "0")
+                                    stringBuilder.AppendLine($"\tmov ax, [bp - {vs1.offset}]");
+                                else
+                                    stringBuilder.AppendLine($"\tmov ax, {vs1.name}_{vs1.scope}");
+                                if (scope1 != "0")
+                                    stringBuilder.AppendLine($"\tmov dx, [bp - {vs2.offset}]");
+                                else
+                                    stringBuilder.AppendLine($"\tmov dx, {vs2.name}_{vs2.scope}");
+
                                 stringBuilder.AppendLine($"\tdiv dl");
                                 if (quadruple.op == "%")
                                 {
@@ -675,27 +787,51 @@ namespace myapp.Model.TargetCode
                     }
                     else
                     {
-                        if(IsVariable(quadruple.arg1) && IsVariable(quadruple.arg2))
+                        if(IsVariable(quadruple.arg1) && IsVariable(quadruple.arg2)) // 两边都是变量
                         {
                             VariableSymbol vs1 = GetVariableSymbol(symbolTabelManager, quadruple.arg1);
                             VariableSymbol vs2 = GetVariableSymbol(symbolTabelManager, quadruple.arg2);
 
-                            stringBuilder.AppendLine($"\tmov ax, [bp - {vs1.offset}]");
-                            stringBuilder.AppendLine($"\tcmp ax, [bp - {vs2.offset}]");
+                            if (vs1.scope != "0")
+                                stringBuilder.AppendLine($"\tmov ax, [bp - {vs1.offset}]");
+                            else
+                                stringBuilder.AppendLine($"\tmov ax, {vs1.name}_{vs1.scope}");
+
+                            if (vs2.scope != "0")
+                                stringBuilder.AppendLine($"\tcmp ax, [bp - {vs2.offset}]");
+                            else
+                                stringBuilder.AppendLine($"\tcmp ax, {vs2.name}_{vs2.scope}");
+
+
                             stringBuilder.AppendLine($"\t{quadruple.op} {quadruple.result}");
                         }
-                        else if(IsVariable(quadruple.arg1))
+                        else if(IsVariable(quadruple.arg1)) // 左变量  右边数字
                         {
                             int.TryParse(quadruple.arg2, out int num);
                             VariableSymbol vs = GetVariableSymbol(symbolTabelManager, quadruple.arg1);
-                            stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                            if (vs.scope != "0")
+                                stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                            else
+                                stringBuilder.AppendLine($"\tmov ax, {vs.name}_{vs.scope}");
+
                             stringBuilder.AppendLine($"\tcmp ax, {num}");
                             stringBuilder.AppendLine($"\t{quadruple.op} {quadruple.result}");
 
                         }
+                        else if(IsTemp(quadruple.arg1))
+                        {
+                            int.TryParse(quadruple.arg2, out int num);
+                            stringBuilder.AppendLine($"\tpop ax");
+                            stringBuilder.AppendLine($"\tcmp ax, {num}");
+                            stringBuilder.AppendLine($"\t{quadruple.op} {quadruple.result}");
+                        }
                         else
                         {
-
+                            int.TryParse(quadruple.arg2, out int num1);
+                            int.TryParse(quadruple.arg2, out int num2);
+                            stringBuilder.AppendLine($"\tmov ax, {num1}");
+                            stringBuilder.AppendLine($"\tcmp ax, {num2}");
+                            stringBuilder.AppendLine($"\t{quadruple.op} {quadruple.result}");
                         }
 
                     
@@ -715,9 +851,20 @@ namespace myapp.Model.TargetCode
                     else if(IsVariable(quadruple.arg1))
                     {
                         VariableSymbol vs = GetVariableSymbol(symbolTabelManager, quadruple.arg1);
-                        stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                        if (vs.scope != "0")
+                            stringBuilder.AppendLine($"\tmov ax, [bp - {vs.offset}]");
+                        else
+                            stringBuilder.AppendLine($"\tmov ax, {vs.name}_{vs.scope}");
+
                         stringBuilder.AppendLine($"\tneg ax");
-                        stringBuilder.AppendLine($"\tmov [bp - {vs.offset}], ax");
+
+                        if (vs.scope != "0")
+                            stringBuilder.AppendLine($"\tmov [bp - {vs.offset}], ax");
+                        else
+                            stringBuilder.AppendLine($"\tmov {vs.name}_{vs.scope}, ax");
+
+
+
                         stringBuilder.AppendLine($"\tpush ax");
                     }
                 }
@@ -742,7 +889,7 @@ namespace myapp.Model.TargetCode
 
         public bool IsVariable(string v)
         {
-            return !v.StartsWith("#") && !int.TryParse( v ,out int res);
+            return !v.StartsWith("#") && !int.TryParse( v ,out int res) && v != "result";
         }
 
         public bool IsTemp(string v) 

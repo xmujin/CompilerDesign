@@ -1,4 +1,5 @@
-﻿using myapp.Model.Lexer;
+﻿using myapp.Model.CodeGen;
+using myapp.Model.Lexer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,5 +21,21 @@ namespace myapp.Model.Inter
             this.argument = argument;
             this.prefix = prefix;
         }
+
+
+        public override void Gen(List<Quadruple> quadruples, int b, int a)
+        {
+
+            
+
+        }
+
+
+
+
+
+
+
+
     }
 }

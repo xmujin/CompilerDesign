@@ -35,11 +35,11 @@ namespace myapp.Model.Inter
         public override void Gen(List<Quadruple> quadruples, int b, int a)
         {
             // 声明并赋值
-            if(init != null)
+            if(init != null && depth != 0) // 局部变量的四元式生成
             {
                 if(init is  LogicExpression)
                 {
-                    string ids = id.ToString();
+                    string ids = id.ToString() + $"_{depth}";
                     int label1 = NewLabel();
                     int label2 = NewLabel();
                     // 初始为0
@@ -63,7 +63,7 @@ namespace myapp.Model.Inter
                         be.op.ToString() == ">="
                     )
                     {
-                        string ids = id.ToString();
+                        string ids = id.ToString() + $"_{depth}";
                         int label1 = NewLabel();
                         int label2 = NewLabel();
                         // 初始为0

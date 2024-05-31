@@ -152,7 +152,17 @@ namespace myapp.Model.Parser
                     Match(',');
                     Token t = look; // 获取标识符
                     Match(Tag.ID);
-                    v.declarations.Add(new VariableDeclarator(new Identifier(topid.idtype, ((Word)t).lexeme), null));
+                    if(look.tag != '=')
+                    {
+                        v.declarations.Add(new VariableDeclarator(new Identifier(topid.idtype, ((Word)t).lexeme), null));
+                    }
+      
+                    else
+                    {
+                        Match('=');
+                        v.declarations.Add(new VariableDeclarator(new Identifier(topid.idtype, ((Word)t).lexeme), Bool()));
+                    }
+                        
                 }
                 Match(';');
                 return v;
@@ -334,13 +344,8 @@ namespace myapp.Model.Parser
             {
                 Move();
                 Match('(');
-                VariableDeclaration init = null;
-                Node node = Statement();
+                Statement node = (Statement)Statement();
 
-                if(node is VariableDeclaration es)
-                {
-                    init = es;
-                }
                 Expression test = Bool();
                 Match(';');
 
@@ -351,7 +356,7 @@ namespace myapp.Model.Parser
                 Statement body = (Statement)Statement();
 
 
-                ForStatement ws = new ForStatement(init, test, update, body);
+                ForStatement ws = new ForStatement(node, test, update, body);
 
                 return ws;
             }

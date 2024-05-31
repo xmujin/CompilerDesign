@@ -22,17 +22,23 @@ namespace myapp.Model.Inter
 
         public override void Gen(List<Quadruple> quadruples, int b, int a)
         {
+
+
+
             int begin = NewLabel();
-            EmitLabel(quadruples, begin);
+            //int trueLabel = NewLabel();
+            //test.trueLabel = Expression.fall;
+            test.trueLabel = begin;
 
-            // 生成循环体语句
+
+            test.falseLabel = Expression.fall;
+
+            EmitLabel(quadruples, begin); // 发射标签
+
             body.Gen(quadruples, b, a);
+            
+            test.Gen(quadruples, b, a);
 
-            if (test.ToString() == "!=")
-            {
-                BinaryExpression be = test as BinaryExpression;
-                quadruples.Add(new Quadruple("jne", be.left.ToString(), be.right.ToString(), "L" + begin));
-            }
 
 
         }

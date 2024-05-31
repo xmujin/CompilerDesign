@@ -72,6 +72,7 @@ namespace myapp.Model.Symbols
                     if (vs.name == name && vs.scope == scope)
                         return vs;
                 }
+                else return tb.Lookdown(name, scope);
             }
             return null;
 

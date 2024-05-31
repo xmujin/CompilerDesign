@@ -26,6 +26,7 @@ namespace myapp.Model.Inter
 
         public override string Gen(List<Quadruple> quadruples)
         {
+            
             return name;
         }
 
@@ -38,20 +39,23 @@ namespace myapp.Model.Inter
         /// <param name="a"></param>
         public override void Gen(List<Quadruple> quadruples, int b, int a)
         {
+            VariableSymbol z = (VariableSymbol)symbolTableManager.Lookup(name);
+            string res = z.name + "_" + z.scope;
 
+            
             if (trueLabel != fall && falseLabel != fall)
             {
-                quadruples.Add(new Quadruple("jne", name, "0", "L" + trueLabel));
+                quadruples.Add(new Quadruple("jne", res, "0", "L" + trueLabel));
                 quadruples.Add(new Quadruple("jmp", null, null, "L" + falseLabel));
 
             }
             else if (trueLabel != fall)
             {
-                quadruples.Add(new Quadruple("jne", name, "0", "L" + trueLabel));
+                quadruples.Add(new Quadruple("jne", res, "0", "L" + trueLabel));
             }
             else if (falseLabel != fall)
             {
-                quadruples.Add(new Quadruple("je", name, "0", "L" + falseLabel));
+                quadruples.Add(new Quadruple("je", res, "0", "L" + falseLabel));
             }
             else
             {

@@ -42,18 +42,19 @@ namespace myapp.Model.Inter
                 // 如果赋值语句是 a > b (比较), !=, == , &&, , ||  需要单独考虑，因为要对变量赋值为0或1
 
 
-                int label = NewLabel();
+                int label1 = NewLabel();
+                int label2 = NewLabel();
                 // 初始为0
                 quadruples.Add(new Quadruple("=", "0", null, id));  // 赋值为0
 
-                right.trueLabel = label;
-                right.falseLabel = a;
+                right.trueLabel = label1;
+                right.falseLabel = label2;
                 right.Gen(quadruples, b, a);
                 // 成功
-                EmitLabel(quadruples, label);
+                EmitLabel(quadruples, label1);
                 // 赋值为1
                 quadruples.Add(new Quadruple("=", "1", null, id));  // 赋值为1
-
+                EmitLabel(quadruples, label2);
 
 
             }
@@ -81,8 +82,16 @@ namespace myapp.Model.Inter
             }
             else
             {
+                if(right is Identifier ids)
+                {
 
-                quadruples.Add(new Quadruple("=", right.Gen(quadruples), null, id.ToString()));
+                    VariableSymbol z = (VariableSymbol)symbolTableManager.Lookup(ids.ToString());
+                    string leftRes = z.name + "_" + z.scope;
+
+                    
+                    quadruples.Add(new Quadruple("=", leftRes, null, id.ToString()));
+                }
+                else quadruples.Add(new Quadruple("=", right.Gen(quadruples), null, id.ToString()));
             }
                 
         }
